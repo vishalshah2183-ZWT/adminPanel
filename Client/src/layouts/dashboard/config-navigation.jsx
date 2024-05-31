@@ -15,7 +15,7 @@ const navConfig = [
   {
     title: 'All Products',
     path: '/user',
-    icon: icon('ic_user'),
+    icon:  icon('ic_cart'),
   },
   {
     title: 'product',
@@ -27,9 +27,20 @@ const navConfig = [
     path: '/blog',
     icon: icon('ic_blog'),
   },
-  {
+ /*  {
     title: 'login',
     path: '/login',
+    icon: icon('ic_lock'),
+  }, */
+  {
+    title: 'Add Users',
+    path: '/addUsers',
+    icon: icon('ic_user'),
+  },
+  
+  {
+    title: 'Manage Roles',
+    path: '/manageRoles',
     icon: icon('ic_lock'),
   },
   {

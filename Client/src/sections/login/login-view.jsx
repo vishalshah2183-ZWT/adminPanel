@@ -1,5 +1,6 @@
 import { useState } from 'react';
-
+import { CookiesProvider, useCookies } from 'react-cookie'
+import 'react-toastify/dist/ReactToastify.css';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
@@ -19,6 +20,10 @@ import { bgGradient } from 'src/theme/css';
 
 import Logo from 'src/components/logo';
 import Iconify from 'src/components/iconify';
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import { error } from 'src/theme/palette';
+import { Navigate } from 'react-router-dom';
 
 // ----------------------------------------------------------------------
 
@@ -28,18 +33,40 @@ export default function LoginView() {
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [userEmail,SetUserEmail] = useState('')
+  const [userPassword,setUserPassword] = useState('')
+  const [cookies, setCookie] = useCookies(['user'])
 
   const handleClick = () => {
-    router.push('/dashboard');
+    axios.post("http://localhost:5001/login", {userEmail:userEmail,userPassword:userPassword})
+    .then((res) => {
+      try {
+        console.log(res.data)
+        setCookie('user', res.data, { path: '/' })
+        toast.success(`${res.data.User} Logged in...!!!`)
+        router.push('/');
+        
+      }
+      catch (err) {
+        console.log(err)
+      }
+    }).catch((err)=>{
+      toast.error(err.response.data.error)      
+    })
   };
 
+
+ 
+  
+  
   const renderForm = (
     <>
       <Stack spacing={3}>
-        <TextField name="email" label="Email address" />
+        <TextField name="email" label="Email address"  onChange={(e)=>SetUserEmail(e.target.value)}/>
 
         <TextField
           name="password"
+          onChange={(e)=>setUserPassword(e.target.value)}
           label="Password"
           type={showPassword ? 'text' : 'password'}
           InputProps={{
@@ -99,7 +126,7 @@ export default function LoginView() {
             maxWidth: 420,
           }}
         >
-          <Typography variant="h4">Sign in to Minimal</Typography>
+          <Typography variant="h4">Sign in to AdminPanel</Typography>
 
           <Typography variant="body2" sx={{ mt: 2, mb: 5 }}>
             Don’t have an account?
@@ -148,6 +175,7 @@ export default function LoginView() {
 
           {renderForm}
         </Card>
+      <ToastContainer/>
       </Stack>
     </Box>
   );

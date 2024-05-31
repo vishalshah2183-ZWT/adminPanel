@@ -1,9 +1,9 @@
 const asyncHandler = require("express-async-handler")
-const ProductsModel = require('../models/ProductModel')
+const db = require('../models')
+const ProductsModel = db.product
+const fs = require('fs');
+const { where } = require("sequelize");
 
-
-//@desc get all Products
-//@route Get /api/Products
 const getAllProduct = asyncHandler(async (req, res) => {
     const products = await ProductsModel.findAll();
     return res.status(200).json(products)
@@ -11,20 +11,17 @@ const getAllProduct = asyncHandler(async (req, res) => {
 
 
 //@desc Create a Product
-//@route Post /api/Products
+//@route Post /Products
 //@access public
-const createProduct = asyncHandler(async (req, res) => {
+const createProduct = async (req, res) => {
+    const { title, price, description, category, stock } = req.body;
     console.log(req.body)
-  /*   const { id, title, price, description, category, image, stock } = req.body;
-    if (!title || !price || !description || !category || !image || !stock) {
-        res.status(400);
-        throw new Error("All fields are Mandatory..!")
-    } */
-    const {  title, price, description, category, image, stock } = req.body;
-    ProductsModel.create({price:price,description:description,category:category,image:image,stock:stock})
-    res.status(201).json({ message: "Product Created" })
+    const image = `/uploads/products/${req?.file?.filename}`
+    await ProductsModel.create({ title: title, image: image, price: price, description: description, category: category, stock: stock })
+    const product = await ProductsModel.findAll()
+    res.status(201).json({ product: product, message: "Product Created" })
 }
-)
+
 //@desc Get Particular Product
 //@route Get /api/Products/:id
 //@access public
@@ -39,14 +36,22 @@ const getProduct = asyncHandler(async (req, res) => {
 //@route put /api/Products/:id
 //@access public
 const updateProduct = asyncHandler(async (req, res) => {
-   /*  let updatedProduct
-    ProductsModel.update(
-        req,
-        {
-            where
-        }
-    ) */
-    res.status(200).json({ message: `Update Product of ${req.params.id}` })
+    console.log(req.body)
+    const { id, title, price, description, category, stock } = req.body;
+    const image = `/uploads/products/${req?.file?.filename}` 
+    if ( image == '/uploads/products/undefined' ) {
+        await ProductsModel.update({ title: title, price: price, description: description, category: category, stock: stock },
+            { where: { id: id } }
+        )
+    }
+    else {
+        await ProductsModel.update({ title: title, image: image, price: price, description: description, category: category, stock: stock },
+            { where: { id: id } }
+        )
+    }
+
+    const product = await ProductsModel.findAll()
+    await res.status(200).json({ message: `Product Updated Successfully`, product: product })
 })
 
 //@desc Delete Product
