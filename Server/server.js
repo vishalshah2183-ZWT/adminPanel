@@ -32,6 +32,7 @@ app.use("/uploads", express.static("uploads"));
 app.use("/products",require("./routes/productRoutes"))
 app.use("/users",require("./routes/userRoutes"))
 app.use("/login",require("./routes/loginRoutes"))
+app.use("/roles",require("./routes/rolesRoutes"))
 
 
 

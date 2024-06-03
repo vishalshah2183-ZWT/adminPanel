@@ -18,7 +18,6 @@ import Iconify from 'src/components/iconify';
 import DataTable from 'react-data-table-component';
 
 
-
 import axios from 'axios';
 
 
@@ -52,6 +51,7 @@ const addUserStyle = {
 export default function manageRolesPage() {
 
   const [users, setUsers] = useState()
+  const [roles, setRoles] = useState()
   const [viewUserModal, setViewUserModal] = useState(false);
   const [deleteUserModal, setDeleteUserModal] = useState(false);
   const [updateUserModal, setUpdateUserModal] = useState(false)
@@ -59,6 +59,12 @@ export default function manageRolesPage() {
   const [userToBeDeleted, setUserToBeDeleted] = useState();
   const [createUserModal, setCreateUserModal] = useState(false);
   const [openedUser, setOpenedUser] = useState({})
+  const modulesAccess = [
+    { allProducts: ['read', 'write', 'remove'] },
+    { addUsers: ['write', 'remove'] },
+    { manageRoles: ['write'] },
+  ]
+  const [modulesDetails, setModuleDetails] = useState()
 
   useEffect(() => {
     axios.get('http://localhost:5001/users').then((response) => {
@@ -66,7 +72,22 @@ export default function manageRolesPage() {
     })
   }, [])
 
+  useEffect(() => {
+    axios.get('http://localhost:5001/roles').then((response) => {
+      setModuleDetails((response?.data?.map((item) => item?.role))?.map((user) => {
+        return {
+          [user]: [
+            { allProducts: ['read', 'write', 'remove'] },
+            { addUsers: ['write', 'remove'] },
+            { ManageRoles: ['write'] }
+          ]
+        }
+      }))
 
+    })
+  }, [])
+
+  console.log(modulesDetails?.[0]?.admin,"final")
   /* EVENT HANDLERS STARTED*/
   const handleUpdate = (row) => {
     axios.get(`http://localhost:5001/users/${row?.id}`).then((response) => {
@@ -122,9 +143,9 @@ export default function manageRolesPage() {
 
 
   const updateUser = (e) => {
-    
+
     e.preventDefault()
-    axios.put("http://localhost:5001/users",userToBeUpdated).then((res) => {
+    axios.put("http://localhost:5001/users", userToBeUpdated).then((res) => {
       try {
         setUpdateUserModal(false)
         console.log(res?.data?.users)
@@ -140,47 +161,140 @@ export default function manageRolesPage() {
   }
   /* EVENT HANDLERS ENDED*/
 
+  const modules = ['allProducts', 'addUsers', 'manageRoles']
+  const actions = ['read', 'write', 'remove']
 
-  let userColumns = (Object.keys(users?.[0] || {}))
-  const columns = userColumns?.map((column) => {
-    if (column != 'id') {
-      return { name: column, selector: row => row?.[column],sortable:true}
-    }
-    else{
-      return { name: column, selector: row => row?.[column],omit:true,sortable:true}
-    }
-  })
-  columns?.push(
+
+
+
+
+  /*  columns?.push(
+     {
+       name: 'ACTIONS',
+       button: true,
+       width: "250px",
+       cell: row => <div className="flex gap-2">
+         <Button
+           variant="outlined"
+           color="warning"
+           onClick={() => handleUpdate(row)}
+         >
+           Update
+         </Button>
+      
+         <Button
+           variant="outlined"
+           color="error"
+           // onClick={() => handleDelete(row)}
+           onClick={() => openDeleteUserModal(row)}
+         >
+           Delete
+         </Button>
+       </div>
+     }) */
+
+
+  const tempUsers = ['admin', 'employee']
+  const usersList = ['admin', 'employee']
+ console.log(modulesDetails)
+  const columns = [
     {
-      name: 'ACTIONS',
+      name: 'Users',
+      selector: row => row.users,
+
+    },
+    {
+      name: 'Modules',
+      // selector: row => row.modules,
       button: true,
       width: "250px",
-      cell: row => <div className="flex gap-2">
-        <Button
-          variant="outlined"
-          color="warning"
-          onClick={() => handleUpdate(row)}
-        >
-          Update
-        </Button>
-     
-        <Button
-          variant="outlined"
-          color="error"
-          // onClick={() => handleDelete(row)}
-          onClick={() => openDeleteUserModal(row)}
-        >
-          Delete
-        </Button>
+      cell: row => <div className="flex flex-col gap-4 py-4 text-sm font-semibold">
+        {
+          modules?.map((module, indx) => {
+            return <div class="flex items-center mb-4" key={indx}>
+              <input
+                id={row?.users + indx}
+                type="checkbox"
+                value=""
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              />
+              <label htmlFor={row?.users + indx} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{module}</label>
+            </div>
+          })
+        }
       </div>
-    })
-  const data = users
-  const initialValues = {
-    email: '',
-    password: '',
-    role: '',
-  }
+    },
+    {
+      name: 'Actions',
+      selector: row => row.actions,
+      button: true,
+      width: "320px",
+      cell: row => {
+        return <div>
+          {/*  {Array.from({ length: 3 }).map((item) => {
 
+            return <div key={item}>
+
+              <div className="flex gap-4 py-4 text-sm font-semibold">
+                <div class="flex items-center mb-4">
+                  <input
+                    id={`read${item + row?.users}`}
+                    type="checkbox"
+                    value=""
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <label htmlFor={`read${item + row?.users}`} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Read</label>
+                </div>
+                <div class="flex items-center mb-4">
+                  <input
+                    id={`write${item + row?.users}`}
+                    type="checkbox"
+                    value=""
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <label htmlFor={`write${item + row?.users}`} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Write</label>
+                </div>
+                <div class="flex items-center mb-4">
+                  <input
+                    id={`remove${item + row?.users}`}
+                    type="checkbox"
+                    value=""
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <label htmlFor={`remove${item + row?.users}`} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Remove</label>
+                </div>
+
+
+              </div>
+              <br />
+            </div>
+          })} */}
+          
+        </div>
+      }
+
+
+    },
+
+  ];
+
+  const data = [
+    {
+      users: "admin",
+    },
+    {
+      users: "employee",
+    },
+  ]
+
+  const initialValues = {
+    title: '',
+    price: '',
+    description: '',
+    category: '',
+    image: '',
+    stock: ''
+  }
   const { values, handleSubmit, handleChange, setFieldValue, resetForm } = useFormik({
     initialValues,
     onSubmit: () => {
@@ -199,7 +313,7 @@ export default function manageRolesPage() {
   return (
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4">Add Users</Typography>
+        <Typography variant="h4">Manage Roles</Typography>
 
         <Button
           variant="contained"
@@ -214,6 +328,9 @@ export default function manageRolesPage() {
         columns={columns}
         data={data}
       />
+
+
+
 
 
       <div style={{ margin: "25%" }}>
@@ -340,25 +457,25 @@ export default function manageRolesPage() {
               <br />
 
 
-              <form class="space-y-4 md:space-y-6" onSubmit={(e)=>updateUser(e)}>
+              <form class="space-y-4 md:space-y-6" onSubmit={(e) => updateUser(e)}>
                 <div>
                   <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
                   <input
                     type="email"
                     name="email"
                     value={userToBeUpdated?.email}
-                    onChange={(e)=>setUserToBeUpdated({...userToBeUpdated,email:e.target.value})}
+                    onChange={(e) => setUserToBeUpdated({ ...userToBeUpdated, email: e.target.value })}
                     id="email"
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@company.com" required />
                 </div>
-              
+
                 <div>
                   <label for="role" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Role</label>
                   <select
                     type="select"
                     name="role"
                     value={userToBeUpdated?.role}
-                    onChange={(e)=>setUserToBeUpdated({...userToBeUpdated,role:e.target.value})}
+                    onChange={(e) => setUserToBeUpdated({ ...userToBeUpdated, role: e.target.value })}
                     id="role"
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required >
                     <option value="" name="role" disabled></option>

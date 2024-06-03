@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Card from '@mui/material/Card';
@@ -27,6 +27,7 @@ import { object } from 'prop-types';
 import { imagefrombuffer } from "imagefrombuffer";
 import { Box, CardActions, CardContent, CardMedia, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Modal, TextField } from '@mui/material';
 import { useFormik } from 'formik';
+import { MyContext } from 'src/context/MyContext';
 // ----------------------------------------------------------------------
 
 
@@ -138,11 +139,15 @@ export default function UserPage() {
   const [openedProduct, setOpenedProduct] = useState({})
   const [previewUrl, setPreviewUrl] = useState(null)
 
+
   useEffect(() => {
     axios.get('http://localhost:5001/products').then((response) => {
       setProducts(response?.data)
     })
+
+    
   }, [])
+
 
 
   /* EVENT HANDLERS STARTED*/
