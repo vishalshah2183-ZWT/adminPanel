@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import { users } from 'src/_mock/user';
-
+import Select from 'react-select'
 import Iconify from 'src/components/iconify';
 
 
@@ -23,6 +23,7 @@ import axios from 'axios';
 
 import { Box, CardActions, CardContent, CardMedia, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Modal, TextField } from '@mui/material';
 import { useFormik } from 'formik';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const style = {
   position: "absolute",
@@ -52,6 +53,7 @@ export default function manageRolesPage() {
 
   const [users, setUsers] = useState()
   const [roles, setRoles] = useState()
+  const [modules, setModules] = useState()
   const [viewUserModal, setViewUserModal] = useState(false);
   const [deleteUserModal, setDeleteUserModal] = useState(false);
   const [updateUserModal, setUpdateUserModal] = useState(false)
@@ -59,12 +61,14 @@ export default function manageRolesPage() {
   const [userToBeDeleted, setUserToBeDeleted] = useState();
   const [createUserModal, setCreateUserModal] = useState(false);
   const [openedUser, setOpenedUser] = useState({})
-  const modulesAccess = [
-    { allProducts: ['read', 'write', 'remove'] },
-    { addUsers: ['write', 'remove'] },
-    { manageRoles: ['write'] },
-  ]
+  const modulesAccess = {
+    allProducts: ['read', 'write', 'remove'],
+    addUsers: ['write', 'remove'],
+    ManageRoles: ['write']
+  }
+
   const [modulesDetails, setModuleDetails] = useState()
+
 
   useEffect(() => {
     axios.get('http://localhost:5001/users').then((response) => {
@@ -72,22 +76,28 @@ export default function manageRolesPage() {
     })
   }, [])
 
-  useEffect(() => {
-    axios.get('http://localhost:5001/roles').then((response) => {
-      setModuleDetails((response?.data?.map((item) => item?.role))?.map((user) => {
-        return {
-          [user]: [
-            { allProducts: ['read', 'write', 'remove'] },
-            { addUsers: ['write', 'remove'] },
-            { ManageRoles: ['write'] }
-          ]
-        }
-      }))
+  /*  useEffect(() => {
+     axios.get('http://localhost:5001/roles').then((response) => {
+       setModuleDetails((response?.data?.map((item) => item?.role))?.map((user) => {
+         return {
+           [user]: {
+             allProducts: { read: false, write: false, remove: false },
+             addUsers: { write: false, remove: false },
+             ManageRoles: { write: false }
+           }
+         }
+       }))
+ 
+     })
+   }, []) */
 
+  useEffect(() => {
+    axios.get('http://localhost:5001/modules').then((response) => {
+      let modules = response?.data?.map((data) => data?.module)
+      // console.log(modules,"modules")
+      setModules(modules)
     })
   }, [])
-
-  console.log(modulesDetails?.[0]?.admin,"final")
   /* EVENT HANDLERS STARTED*/
   const handleUpdate = (row) => {
     axios.get(`http://localhost:5001/users/${row?.id}`).then((response) => {
@@ -110,7 +120,6 @@ export default function manageRolesPage() {
   }
   const closeDeleteUserModal = (confirmDelete) => {
     if (confirmDelete) {
-      console.log(userToBeDeleted, "&&")
       axios.delete(`http://localhost:5001/users/${userToBeDeleted?.id}`).then((response) => {
         setUsers(response?.data)
         toast.error("User Deleted ");
@@ -156,136 +165,100 @@ export default function manageRolesPage() {
         console.log(err)
       }
     })
-
-
   }
   /* EVENT HANDLERS ENDED*/
 
-  const modules = ['allProducts', 'addUsers', 'manageRoles']
-  const actions = ['read', 'write', 'remove']
+  /*   const modules = ['allProducts', 'addUsers', 'manageRoles']
+    const actions = ['read', 'write', 'remove'] */
 
-
-
-
-
-  /*  columns?.push(
+  /*  const isModuleChecked = (obj) => {
+     let response = false
+     let enteredObject = Object.keys(obj).map((key) => obj[key])?.filter((value) => value == true);
+ 
+     if (enteredObject?.length > 0) {
+       response = true
+     }
+     else {
+       response = false
+     }
+     return response
+   } */
+  /*  const columns = [
      {
-       name: 'ACTIONS',
+       name: 'Users',
+       selector: row => row.users,
+     },
+     {
+       name: 'Modules',
        button: true,
        width: "250px",
-       cell: row => <div className="flex gap-2">
-         <Button
-           variant="outlined"
-           color="warning"
-           onClick={() => handleUpdate(row)}
-         >
-           Update
-         </Button>
-      
-         <Button
-           variant="outlined"
-           color="error"
-           // onClick={() => handleDelete(row)}
-           onClick={() => openDeleteUserModal(row)}
-         >
-           Delete
-         </Button>
+       cell: row => <div className="flex flex-col gap-4 py-4 text-sm font-semibold">
+         {
+           Object.keys(modulesAccess)?.map((module, indx) => {
+             return <div className="flex items-center mb-4" key={indx}>
+ 
+               <input
+                 id={row?.users + indx}
+                 type="checkbox"
+                 value={module}
+                 checked={modulesDetails?.length > 0 && isModuleChecked(modulesDetails?.find((module) => Object.keys(module)[0] == row?.users)?.[row?.users]?.[module])}
+                 onChange={(e) => moduleHandler(e, row, module)}
+                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+               />
+               <label htmlFor={row?.users + indx} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{module}</label>
+             </div>
+           })
+         }
        </div>
-     }) */
-
-
-  const tempUsers = ['admin', 'employee']
-  const usersList = ['admin', 'employee']
- console.log(modulesDetails)
-  const columns = [
-    {
-      name: 'Users',
-      selector: row => row.users,
-
-    },
-    {
-      name: 'Modules',
-      // selector: row => row.modules,
-      button: true,
-      width: "250px",
-      cell: row => <div className="flex flex-col gap-4 py-4 text-sm font-semibold">
-        {
-          modules?.map((module, indx) => {
-            return <div class="flex items-center mb-4" key={indx}>
-              <input
-                id={row?.users + indx}
-                type="checkbox"
-                value=""
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label htmlFor={row?.users + indx} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{module}</label>
-            </div>
-          })
-        }
-      </div>
-    },
-    {
-      name: 'Actions',
-      selector: row => row.actions,
-      button: true,
-      width: "320px",
-      cell: row => {
-        return <div>
-          {/*  {Array.from({ length: 3 }).map((item) => {
-
-            return <div key={item}>
-
-              <div className="flex gap-4 py-4 text-sm font-semibold">
-                <div class="flex items-center mb-4">
-                  <input
-                    id={`read${item + row?.users}`}
-                    type="checkbox"
-                    value=""
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  <label htmlFor={`read${item + row?.users}`} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Read</label>
-                </div>
-                <div class="flex items-center mb-4">
-                  <input
-                    id={`write${item + row?.users}`}
-                    type="checkbox"
-                    value=""
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  <label htmlFor={`write${item + row?.users}`} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Write</label>
-                </div>
-                <div class="flex items-center mb-4">
-                  <input
-                    id={`remove${item + row?.users}`}
-                    type="checkbox"
-                    value=""
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  <label htmlFor={`remove${item + row?.users}`} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Remove</label>
-                </div>
-
-
-              </div>
-              <br />
-            </div>
-          })} */}
-          
-        </div>
-      }
-
-
-    },
-
-  ];
-
-  const data = [
-    {
-      users: "admin",
-    },
-    {
-      users: "employee",
-    },
-  ]
+     },
+     {
+       name: 'Actions',
+       selector: row => row.actions,
+       button: true,
+       width: "320px",
+       cell: row => {
+         return <div>
+ 
+           {
+             Object?.keys(modulesAccess)?.map((module) => {
+               return <div className='flex gap-4'>
+                 {
+                   modulesAccess?.[module]?.map((access, index) => {
+                     return <div key={index} className="flex items-center mb-4 py-2 text-sm font-semibold">
+ 
+                       <input
+                         id={row?.users + module + access + index}
+                         type="checkbox"
+                         value={access}
+                         checked={modulesDetails?.find((module) => Object.keys(module)[0] == row?.users)?.[row?.users]?.[module]?.[access]}
+                         onChange={(e) => actionHandler(e, row, module, access)}
+                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                       />
+                       <label htmlFor={row?.users + module + access + index} className='mx-2'>{access}</label>
+                     </div>
+                   })
+                 }
+               </div>
+ 
+             })
+           }
+ 
+         </div>
+       }
+ 
+ 
+     },
+ 
+   ];
+ 
+   const data = [
+     {
+       users: "admin",
+     },
+     {
+       users: "employee",
+     },
+   ] */
 
   const initialValues = {
     title: '',
@@ -310,6 +283,100 @@ export default function manageRolesPage() {
     }
   })
 
+  const [roleDetails, setRoleDetails] = useState({
+    role: '',
+    modules: []
+  })
+  const actionHandler = (e, row, module, access) => {
+    let checked = e.target.checked
+    let user = row.users
+    let modulesDetailsVariable = modulesDetails
+    // console.log(module)
+    if (checked) {
+      modulesDetailsVariable.find((module) => Object.keys(module)[0] == user)[user][module][access] = true
+    }
+    else {
+      modulesDetailsVariable.find((module) => Object.keys(module)[0] == user)[user][module][access] = false
+    }
+    setModuleDetails([...modulesDetailsVariable])
+  }
+
+  const moduleHandler = (e, row, module) => {
+    let checked = e.target.checked
+    let user = row.users
+    let modulesDetailsVariable = modulesDetails
+    let selectedModule = modulesDetailsVariable?.find((module) => Object.keys(module)[0] == user)?.[user]?.[module]
+    if (checked) {
+      for (let access in selectedModule) {
+        selectedModule[access] = true
+      }
+
+    }
+    else {
+      for (let access in selectedModule) {
+        selectedModule[access] = false
+      }
+    }
+    setModuleDetails([...modulesDetailsVariable])
+  }
+  const handleSave = () => {
+    let modulesDetailsVariable = modulesDetails
+    /*     modulesDetailsVariable = modulesDetailsVariable?.map((user)=>{
+          let UserName = Object.keys(user) 
+          return {[UserName[0]] : {}}
+        }) */
+
+    modulesDetailsVariable = modulesDetailsVariable?.map((user) => {
+      let UserName = Object.keys(user)
+      /* if(isModuleChecked(user[UserName])) 
+        {
+            return {[UserName[0]] : {}}
+        } */
+      // return {[UserName[0]] : {}}
+    })
+    console.log(modulesDetails)
+    // console.log(modulesDetails)
+  }
+  // { value: 'chocolate', label: 'Chocolate' },
+  const options = modules?.map((item) => ({ value: item, label: item }))
+
+
+  const modulesHandler = (e) => {
+    let selectedModules = e?.map((item) => item?.value)
+    let rolesDetailsVariable = roleDetails
+    let modulesVariable = selectedModules?.map((item) => {
+      return { [item]: { create: false, update: false, delete: false } }
+    })
+
+    rolesDetailsVariable.modules = modulesVariable
+    /* selectedModules?.map((item)=>{
+      if(!(rolesDetailsVariable?.modules?.find(o=> o[item])))
+        {
+          rolesDetailsVariable?.modules?.push({[item]:{create:false,update:false,delete:false}}) 
+        }
+    })
+ */
+    setRoleDetails({ ...rolesDetailsVariable })
+  }
+  const submitRole = (e) => {
+    e.preventDefault()
+    setCreateUserModal(false)
+    
+    console.log(roleDetails)
+  }
+  const roleDetailsActionHandler = (isChecked,module,action) =>{
+      let rolesDetailsVariable = roleDetails 
+      if(isChecked)
+        {
+            rolesDetailsVariable.modules.find((item)=>Object.keys(item)[0] == module)[module][action] = true
+        }
+          else{
+            rolesDetailsVariable.modules.find((item)=>Object.keys(item)[0] == module)[module][action] = false
+        }
+      setRoleDetails({...rolesDetailsVariable})
+
+    }
+    const navigate = useNavigate()
   return (
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
@@ -319,15 +386,24 @@ export default function manageRolesPage() {
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="eva:plus-fill" />}
-          onClick={() => handleOpen("CreateUser")}
+          onClick={() => navigate("/addRole")}
         >
-          Add User
+          Add Role
         </Button>
       </Stack>
-      <DataTable
+      {/*  <DataTable
         columns={columns}
         data={data}
-      />
+      /> */}
+      <Box textAlign='center' marginTop='5rem'>
+        <Button
+          variant="contained"
+          color="inherit"
+          onClick={handleSave}
+        >
+          Save
+        </Button>
+      </Box>
 
 
 
@@ -370,156 +446,11 @@ export default function manageRolesPage() {
           </Box>
         </Modal>
 
-        {/* CREATE PRODUCT */}
-        <Modal
-          open={createUserModal}
-          onClose={() => handleClose("CreateUser")}
-          aria-labelledby="modal-modal-email"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={addUserStyle}>
-            <div className=''>
-              <Typography id="modal-modal-email" variant="h6" component="h2" align='center'>
-                Create User
-              </Typography>
-              <br />
+      
+        
 
 
-              <form class="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
-                <div>
-                  <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={values?.email}
-                    onChange={handleChange}
-                    id="email"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@company.com" required />
-                </div>
-                <div>
-                  <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={values?.password}
-                    onChange={handleChange}
-                    id="password"
-                    placeholder="••••••••"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required />
-                </div>
-
-
-                <div>
-                  <label for="role" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Role</label>
-                  <select
-                    type="select"
-                    name="role"
-                    value={values?.role}
-                    onChange={handleChange}
-                    id="role"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required >
-                    <option value="" name="role" disabled></option>
-                    <option value="admin" name="role" >Admin</option>
-                    <option value="employee" name="role">Employee</option>
-                  </select>
-                </div>
-
-
-                <div class="flex items-start">
-                  <div class="flex items-center h-5">
-                    <input id="terms" aria-describedby="terms" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800" required />
-                  </div>
-                  <div class="ml-3 text-sm">
-                    <label for="terms" class="font-light text-gray-500 dark:text-gray-300">I accept the <a class="font-medium text-blue-600 hover:underline dark:text-blue-500" href="#">Terms and Conditions</a></label>
-                  </div>
-                </div>
-                <button type="submit" class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Create User</button>
-              </form>
-
-            </div>
-
-          </Box>
-        </Modal>
-
-
-        {/* UPDATE USER */}
-        <Modal
-          open={updateUserModal}
-          onClose={() => handleClose("updateUser")}
-          aria-labelledby="modal-modal-email"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={addUserStyle}>
-            <div className=''>
-              <Typography id="modal-modal-email" variant="h6" component="h2" align='center'>
-                Update User
-              </Typography>
-              <br />
-
-
-              <form class="space-y-4 md:space-y-6" onSubmit={(e) => updateUser(e)}>
-                <div>
-                  <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={userToBeUpdated?.email}
-                    onChange={(e) => setUserToBeUpdated({ ...userToBeUpdated, email: e.target.value })}
-                    id="email"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@company.com" required />
-                </div>
-
-                <div>
-                  <label for="role" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Role</label>
-                  <select
-                    type="select"
-                    name="role"
-                    value={userToBeUpdated?.role}
-                    onChange={(e) => setUserToBeUpdated({ ...userToBeUpdated, role: e.target.value })}
-                    id="role"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required >
-                    <option value="" name="role" disabled></option>
-                    <option value="admin" name="role" >Admin</option>
-                    <option value="employee" name="role">Employee</option>
-                  </select>
-                </div>
-
-
-                <div class="flex items-start">
-                  <div class="flex items-center h-5">
-                    <input id="terms" aria-describedby="terms" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800" required />
-                  </div>
-                  <div class="ml-3 text-sm">
-                    <label for="terms" class="font-light text-gray-500 dark:text-gray-300">I accept the <a class="font-medium text-blue-600 hover:underline dark:text-blue-500" href="#">Terms and Conditions</a></label>
-                  </div>
-                </div>
-                <button type="submit" class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Create User</button>
-              </form>
-
-            </div>
-
-          </Box>
-        </Modal>
-
-
-
-        {/* DELETE PRODUCT */}
-        <Dialog
-          open={deleteUserModal}
-          onClose={closeDeleteUserModal}
-          aria-labelledby="alert-dialog-email"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-email">
-            {`Do you really want to Remove ${userToBeDeleted?.email}`}
-          </DialogTitle>
-          <DialogActions>
-            <Button onClick={() => closeDeleteUserModal(true)}>Yes</Button>
-            <Button onClick={() => closeDeleteUserModal(false)} autoFocus>
-              No
-            </Button>
-          </DialogActions>
-        </Dialog>
+       
 
         {/* TOAST CONTAINER */}
         <ToastContainer />

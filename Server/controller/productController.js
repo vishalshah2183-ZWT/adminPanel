@@ -51,7 +51,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     }
 
     const product = await ProductsModel.findAll()
-    await res.status(200).json({ message: `Product Updated Successfully`, product: product })
+     res.status(200).json({ message: `Product Updated Successfully`, product: product })
 })
 
 //@desc Delete Product

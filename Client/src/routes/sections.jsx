@@ -9,6 +9,7 @@ export const UserPage = lazy(() => import('src/pages/user'));
 export const AddUsersPage = lazy(() => import('src/pages/addUsers'));
 export const  ManageRolesPage= lazy(() => import('src/pages/manageRoles'));
 export const LoginPage = lazy(() => import('src/pages/login'));
+export const AddRolePage = lazy(() => import('src/pages/addRolesPage'));
 export const ProductsPage = lazy(() => import('src/pages/products'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 import Cookies from 'js-cookie';
@@ -33,6 +34,7 @@ export default function Router() {
         { path: 'blog', element: <BlogPage /> },
         { path: 'addUsers', element: <AddUsersPage/> },
         { path: 'manageRoles', element: <ManageRolesPage/> },
+        { path: 'addRole', element: <AddRolePage/> },
       ],
     },
     {

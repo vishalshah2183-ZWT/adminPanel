@@ -33,7 +33,7 @@ app.use("/products",require("./routes/productRoutes"))
 app.use("/users",require("./routes/userRoutes"))
 app.use("/login",require("./routes/loginRoutes"))
 app.use("/roles",require("./routes/rolesRoutes"))
-
+app.use("/modules",require("./routes/modulesRoutes"))
 
 
 app.listen(port,()=>console.log(`Server is Running on Port:${port}`));
