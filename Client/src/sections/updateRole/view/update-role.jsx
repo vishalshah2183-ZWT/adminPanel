@@ -13,50 +13,21 @@ import TablePagination from '@mui/material/TablePagination';
 import { users } from 'src/_mock/user';
 
 import Iconify from 'src/components/iconify';
-
-
+import axios from 'axios';
+import { useFormik } from 'formik';
+import { Box, TextField } from '@mui/material';
+import { useParams } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 
 
 
-import axios from 'axios';
+export default function updateRolePage() {
 
 
-import { Box, CardActions, CardContent, CardMedia, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Modal, TextField } from '@mui/material';
-import { useFormik } from 'formik';
-
-
-
-
-/* const initialValues = {
-  role:'',
-  modules:[]
-} */
-export default function addRolePage() {
+  const [role,setRole] = useState()
   const [modulesForDataTable, setModulesForDataTable] = useState([]);
-  const [modules,setModules] = useState()
-  
-  const initialValues = {
-    role: "",
-    // modules: modules.length > 0 ? ( modules?.map((module) => ({ [module]: { create: false, update: false, delete: false } })) ) : []
-    modules: modules || []
-  }
-  
-  
-  
-  const { values, handleSubmit ,handleChange,setFieldValue,resetForm} = useFormik({
-    initialValues,
-    onSubmit: (value,action) => {
-      axios.post('http://localhost:5001/roles',values).then((res) => {
-        alert(res?.data)
-      })    
-      //RESET FORM
-      setFieldValue('role','')
-      setFieldValue('modules',modules)
-    }
-  })
-
-
+ 
+ 
   useEffect(() => {
     axios.get('http://localhost:5001/modules').then((res) => {
       let modulesVariable = res?.data?.map((item) => {
@@ -64,14 +35,41 @@ export default function addRolePage() {
       })
       let modulesForForm =  modulesVariable?.map((module) => ({ [module]: { create: false, update: false, delete: false } }))
       setModulesForDataTable(modulesVariable)
-      setFieldValue('modules',modulesForForm)
-      setModules(modulesForForm)
     })
   }, [])
+    
+ 
+
+  let id = useParams()?.id
 
 
 
+  const initialValues = {
+    id:'',
+    role: '',
+    modules: []
+  }
+  const {values,setFieldValue,handleChange,handleSubmit} = useFormik({
+      initialValues,
+      onSubmit: (value,action) => {
+        axios.put('http://localhost:5001/roles',values).then((res) => {
+          alert(`${role?.role} Updated...!!`)
+        })    
 
+      
+      }
+  })
+  useEffect(()=>{
+    axios.get(`http://localhost:5001/roles/${id}`).then((response) => {
+      let roleVariable = response?.data
+      roleVariable = {...roleVariable,module:JSON.parse(roleVariable?.module)} 
+      setRole(roleVariable)
+      setFieldValue('id',roleVariable?.id)
+      setFieldValue('modules',roleVariable?.module)
+      setFieldValue('role',roleVariable?.role)
+    })
+  },[])
+  console.log(values)  
   const columns = [
     {
       name: 'Modules',
@@ -88,6 +86,7 @@ export default function addRolePage() {
               className='h-[1rem] w-[1rem]'
               name={`modules.${values?.modules?.findIndex((item)=>Object.keys(item)[0] == row?.modules)}.${row?.modules}.create`}
               value={values?.modules?.[index]?.[row['modules']]?.create}
+              // checked={ values?.modules?.[index]?.[row['modules']]?.create }
               checked={ values?.modules?.[index]?.[row['modules']]?.create }
               onChange={handleChange}
         />
@@ -125,22 +124,20 @@ export default function addRolePage() {
   ];
   
   const data = modulesForDataTable?.map((item)=>({modules:item}))
-  
-  console.log(values)
   return (
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4">Add Role</Typography>
-        <Button
+        <Typography variant="h4">Update Role</Typography>
+
+      {/*   <Button
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="eva:plus-fill" />}
-        // onClick={() => Navigate('/addRole')}
+          onClick={() => handleOpen("CreateUser")}
         >
-          Add Role PAGE
-        </Button>
+          Update Role
+        </Button> */}
       </Stack>
-
       <Box>
         <form  onSubmit={handleSubmit} className='border '>
                 <TextField 
@@ -158,10 +155,11 @@ export default function addRolePage() {
                     type="submit" 
                     className="text-white my-4 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
               >
-                Add
+                Save
               </button>
         </form>
       </Box>
+     
     </Container>
   );
 }

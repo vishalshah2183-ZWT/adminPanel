@@ -4,7 +4,9 @@ const router = express.Router();
 
 const 
     {
-        getAllModules
+        getAllModules,
+        createModule,
+        deleteModule
     } = require('../controller/modulesController')
 
    
@@ -12,5 +14,7 @@ const
 
 
 
-router.route("/").get(getAllModules);
+router.route("/").get(getAllModules).post(createModule);
+router.route("/:id").delete(deleteModule);
+
 module.exports = router;

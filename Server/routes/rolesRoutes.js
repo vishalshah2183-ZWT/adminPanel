@@ -6,10 +6,12 @@ const router = express.Router();
 const 
     {
         getAllRoles,
-        addAllRoles
+        addAllRoles,
+        getRole,
+        updateRole,
+        deleteRole
     } = require('../controller/rolesController')
 
-router.route("/").get(getAllRoles).post(addAllRoles)
-
-
+router.route("/").get(getAllRoles).post(addAllRoles).put(updateRole)
+router.route("/:id").get(getRole).delete(deleteRole)
 module.exports = router

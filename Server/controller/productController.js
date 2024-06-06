@@ -58,8 +58,8 @@ const updateProduct = asyncHandler(async (req, res) => {
 //@route Delete /api/Products/:id
 //@access public
 const deleteProduct = asyncHandler(async (req, res) => {
-    let id = req.params.id
-    ProductsModel.destroy({
+    let id = await req.params.id
+    await ProductsModel.destroy({
         where: {
             id: id
         }

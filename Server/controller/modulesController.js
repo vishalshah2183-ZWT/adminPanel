@@ -21,7 +21,46 @@ const getAllModules = async (req, res) => {
     res.status(200).json(modules);
 }
 
+//@desc Create a Module
+//@route Post/api/Users/:id
+//@access public
+const createModule = async (req, res) => {
+   
+    const { module } = await req.body
+    const moduleExists = await ModulesModel.findAll({
+        where:{module:module}
+    });
+
+    if(moduleExists?.length > 0)
+        {
+            return res.status(201).send("Module already Exists")
+        }
+    await ModulesModel.create({module:module});
+    res.status(200).send("Module Added");
+}
+
+
+//@desc Delete a Module
+//@route Put/api/Module/:id
+//@access public
+const deleteModule = async (req, res) => {
+   let id =await  req.params.id
+   await ModulesModel.destroy({
+        where:{
+            id:id
+        }
+   })
+    const { module } = await req.body
+    const moduleExists = await ModulesModel.findAll({
+        where:{module:module}
+    });
+
+    const modules = await ModulesModel.findAll();
+    res.status(200).send(modules);
+}
 
 module.exports = {
- getAllModules
+ getAllModules,
+ createModule,
+ deleteModule
 }

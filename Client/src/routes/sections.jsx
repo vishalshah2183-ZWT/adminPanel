@@ -10,9 +10,11 @@ export const AddUsersPage = lazy(() => import('src/pages/addUsers'));
 export const  ManageRolesPage= lazy(() => import('src/pages/manageRoles'));
 export const LoginPage = lazy(() => import('src/pages/login'));
 export const AddRolePage = lazy(() => import('src/pages/addRolesPage'));
+export const UpdateRolePage = lazy(() => import('src/pages/updateRolePage'));
 export const ProductsPage = lazy(() => import('src/pages/products'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 import Cookies from 'js-cookie';
+import { UpdateRoleView } from 'src/sections/updateRole/view';
 // ----------------------------------------------------------------------
 const user = Cookies.get('user')
 console.log(user)
@@ -35,6 +37,7 @@ export default function Router() {
         { path: 'addUsers', element: <AddUsersPage/> },
         { path: 'manageRoles', element: <ManageRolesPage/> },
         { path: 'addRole', element: <AddRolePage/> },
+        { path: 'updateRole/:id', element: <UpdateRoleView/> },
       ],
     },
     {
