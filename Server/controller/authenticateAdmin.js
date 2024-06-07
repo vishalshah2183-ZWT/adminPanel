@@ -15,13 +15,14 @@ const AuthenticateAdmin = async (req, res) => {
             email: userEmail,
         },
     });
+    console.log(user)
     if(!user)
         {
             return res.status(401).json({error:"User Not Found"})           
         }
         // res.status(200).json({email:userEmail,userPassword:userPassword})
     let  passwordMatch 
-        if(user.password == userPassword){
+        if(user.password == userPassword || bcrypt.hashSync(userPassword, user.password)){
             passwordMatch = true 
         }
     if (!passwordMatch) {
@@ -29,7 +30,7 @@ const AuthenticateAdmin = async (req, res) => {
         }
     console.log(user)
     const token = await jwt.sign({id: user?.id},process.env.JWTKEY,{ expiresIn: '1h'})
-    res.status(200).json({ token:token, User:{email:user?.email,role:user?.password}});
+    res.status(200).json({ token:token, User:{email:user?.email,role:user?.role}});
 }
 
 module.exports = {

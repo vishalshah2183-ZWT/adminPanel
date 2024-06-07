@@ -102,58 +102,7 @@ export default function addRolePage() {
 
     setFieldValue('modules',modules)
 }
-  /* const columns = [
-    {
-      name: 'Modules',
-      selector: row => row.modules,
-    },
-    {
-      name:'Create',
-      button: true,
-		  cell: (row,index) => {
-        return(<div>
-        <input 
-              type="checkbox"  
-              className='h-[1rem] w-[1rem]'
-              name={`modules.${values?.modules?.findIndex((item)=>Object.keys(item)[0] == row?.modules)}.${row?.modules}.create`}
-              value={values?.modules?.[index]?.[row['modules']]?.create}
-              checked={ values?.modules?.[index]?.[row['modules']]?.create }
-              onChange={handleChange}
-        />
-        
-      </div>)},
-    },
-    {
-      name:'Update',
-      button: true,
-		  cell:  (row,index) => <>
-        <input 
-            type="checkbox" 
-            className='h-[1rem] w-[1rem]'
-            name={`modules.${values?.modules?.findIndex((item)=>Object.keys(item)[0] == row?.modules)}.${row?.modules}.update`}
-            value={values?.modules?.[index]?.[row['modules']]?.update}
-            checked={ values?.modules?.[index]?.[row['modules']]?.update }
-            onChange={handleChange}
-        />
-      </>,
-    },
-    {
-      name:'Delete',
-      button: true,
-		  cell:  (row,index) => <>
-        <input 
-              type="checkbox"  
-              className='h-[1rem] w-[1rem]'
-              name={`modules.${values?.modules?.findIndex((item)=>Object.keys(item)[0] == row?.modules)}.${row?.modules}.delete`}
-              value={values?.modules?.[index]?.[row['modules']]?.delete}
-              checked={ values?.modules?.[index]?.[row['modules']]?.delete }
-              onChange={handleChange}
-        />
-      </>,
-    },
-  ];
-  
-  const data = modulesForDataTable?.map((item)=>({modules:item})) */
+
 
   const columns = [
     {

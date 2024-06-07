@@ -10,6 +10,7 @@ const Op = db.Op
 //@access public
 const createUser = async (req, res) => {
     const { email, password, role } = await req.body
+    console.log(password)
     let emailExists = await UsersModel.findAll({where:{email:email}})
     if(emailExists?.length > 0)
         {
