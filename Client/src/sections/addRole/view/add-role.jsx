@@ -28,17 +28,13 @@ import { useFormik } from 'formik';
 
 
 
-/* const initialValues = {
-  role:'',
-  modules:[]
-} */
+
 export default function addRolePage() {
   const [modulesForDataTable, setModulesForDataTable] = useState([]);
   const [modules,setModules] = useState()
   
   const initialValues = {
     role: "",
-    // modules: modules.length > 0 ? ( modules?.map((module) => ({ [module]: { create: false, update: false, delete: false } })) ) : []
     modules: modules || []
   }
   
@@ -70,9 +66,43 @@ export default function addRolePage() {
   }, [])
 
 
+  //Give Only Simple Object
+  const isModuleChecked = (moduleObject) => {
+    let isModuleCheckedVariable = false
+   
+        let moduleArray = moduleObject &&  Object.keys(moduleObject).map((key) => (moduleObject[key])); 
+        if(moduleArray)
+          {
+            if(moduleArray?.filter((action)=> action == true).length == moduleArray?.length)
+              {
+                  isModuleCheckedVariable = true
+              }
+              else{
+                isModuleCheckedVariable = false
+              }
+          }
+        else{
+          isModuleCheckedVariable = false
+        }
+        return isModuleCheckedVariable
+      
+  }
+  const handleModuleCheck = (e,row,inx) =>{
+    let checked = e.target.checked
+    let module = row?.modulesName
+    let index = inx
+    let modules = values?.modules
 
+    if(checked){
+      modules[index][module] = {create:true,delete:true,update:true}
+      }
+      else{
+      modules[index][module] = {create:false,delete:false,update:false}
+    }
 
-  const columns = [
+    setFieldValue('modules',modules)
+}
+  /* const columns = [
     {
       name: 'Modules',
       selector: row => row.modules,
@@ -81,7 +111,6 @@ export default function addRolePage() {
       name:'Create',
       button: true,
 		  cell: (row,index) => {
-       
         return(<div>
         <input 
               type="checkbox"  
@@ -124,7 +153,97 @@ export default function addRolePage() {
     },
   ];
   
-  const data = modulesForDataTable?.map((item)=>({modules:item}))
+  const data = modulesForDataTable?.map((item)=>({modules:item})) */
+
+  const columns = [
+    {
+      name: 'Modules',
+      button: true,
+      width:'250px',
+      cell: (row, index) => {
+       
+        return (<div>
+          {
+            <div className="flex items-center mb-4">
+                    <input 
+                            id={values?.modules?.[index]} 
+                            type="checkbox" 
+                            // value={isModuleChecked(values?.modules?.[index]?.[row['modulesName']])} 
+                            checked={isModuleChecked( isModuleChecked(values?.modules?.[index]?.[row['modulesName']]) )}
+                            name={`modules${index}`}
+                            onChange={(e)=>handleModuleCheck(e,row,index)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                    />
+                    <label 
+                          htmlFor={modulesForDataTable[index]} 
+                          className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300 cursor-pointer"
+                    >
+                          {modulesForDataTable[index]}
+                    </label>
+                </div>
+            
+          }
+         
+
+        </div>)
+      }
+    },
+    {
+      name: 'Create',
+      button: true,
+      cell: (row, index) => {
+        return (<div>
+          <input
+            type="checkbox"
+            className='h-[1rem] w-[1rem]'
+            name={`modules[${index}].${[row['modulesName']]}.create`}
+            // name={`modules[${index}].${[modulesForDataTable?.[index]]}.create`}
+            value={values?.modules?.[index]?.[row['modulesName']]?.create}
+            // value={values?.modules?.[index]?.[modulesForDataTable?.[index]]?.create}
+            checked={ values?.modules?.[index]?.[row['modulesName']]?.create }
+            // checked={ values?.modules?.[index]?.[modulesForDataTable?.[index]]?.create }
+            onChange={handleChange}
+          />
+
+        </div>)
+      },
+    },
+    {
+      name: 'Update',
+      button: true,
+      cell: (row, index) => <>
+        <input
+          type="checkbox"
+          className='h-[1rem] w-[1rem]'
+          name={`modules[${index}].${[row['modulesName']]}.update`}
+          value={values?.modules?.[index]?.[row['modulesName']]?.update}
+          checked={values?.modules?.[index]?.[row['modulesName']]?.update}
+          onChange={handleChange}
+        />
+      </>,
+    },
+    {
+      name: 'Delete',
+      button: true,
+      cell: (row, index) => <>
+        <input
+          type="checkbox"
+          className='h-[1rem] w-[1rem]'
+          name={`modules[${index}].${[row['modulesName']]}.delete`}
+          value={values?.modules?.[index]?.[row['modulesName']]?.delete}
+          checked={values?.modules?.[index]?.[row['modulesName']]?.delete}
+          onChange={handleChange}
+        />
+      </>,
+    },
+    {
+      name:'ModulesName',
+      selector: row => row.modulesName,
+      omit:true
+    }
+  ];
+
+  const data = modulesForDataTable?.map((module)=>({modulesName:module}))
   
   console.log(values)
   return (

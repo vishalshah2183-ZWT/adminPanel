@@ -1,1 +1,1 @@
-export { default as ModuleView } from './module-view';
+export { default as ManageModuleView } from './module-view';

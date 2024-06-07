@@ -18,148 +18,216 @@ import { useFormik } from 'formik';
 import { Box, TextField } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
+import { omit } from 'lodash';
 
 
 
 export default function updateRolePage() {
 
 
-  const [role,setRole] = useState()
+  const [role, setRole] = useState()
   const [modulesForDataTable, setModulesForDataTable] = useState([]);
- 
- 
-  useEffect(() => {
-    axios.get('http://localhost:5001/modules').then((res) => {
-      let modulesVariable = res?.data?.map((item) => {
-        return item?.module
-      })
-      let modulesForForm =  modulesVariable?.map((module) => ({ [module]: { create: false, update: false, delete: false } }))
-      setModulesForDataTable(modulesVariable)
-    })
-  }, [])
-    
- 
+
+
+
+
 
   let id = useParams()?.id
 
 
 
   const initialValues = {
-    id:'',
+    id: '',
     role: '',
     modules: []
   }
-  const {values,setFieldValue,handleChange,handleSubmit} = useFormik({
-      initialValues,
-      onSubmit: (value,action) => {
-        axios.put('http://localhost:5001/roles',values).then((res) => {
-          alert(`${role?.role} Updated...!!`)
-        })    
+  const { values, setFieldValue, handleChange, handleSubmit } = useFormik({
+    initialValues,
+    onSubmit: (value, action) => {
+      axios.put('http://localhost:5001/roles', values).then((res) => {
+        alert(`${role?.role} Updated...!!`)
+      })
 
-      
-      }
+
+    }
   })
-  useEffect(()=>{
+  useEffect(() => {
     axios.get(`http://localhost:5001/roles/${id}`).then((response) => {
       let roleVariable = response?.data
-      roleVariable = {...roleVariable,module:JSON.parse(roleVariable?.module)} 
+      roleVariable = { ...roleVariable, module: JSON.parse(roleVariable?.module) }
       setRole(roleVariable)
-      setFieldValue('id',roleVariable?.id)
-      setFieldValue('modules',roleVariable?.module)
-      setFieldValue('role',roleVariable?.role)
+      setFieldValue('id', roleVariable?.id)
+      setFieldValue('modules', roleVariable?.module)
+      setFieldValue('role', roleVariable?.role)
+
+     
+        let modulesVariable = roleVariable?.module?.map((item)=>(Object.keys(item)[0]))
+       
+        setModulesForDataTable(modulesVariable)
     })
-  },[])
-  console.log(values)  
+  }, [])
+
+
+
+
+ 
+   //Give Only Simple Object
+  const isModuleChecked = (moduleObject) => {
+    let isModuleCheckedVariable = false
+   
+        let moduleArray = moduleObject &&  Object.keys(moduleObject).map((key) => (moduleObject[key]));
+        console.log(moduleArray)  
+        if(moduleArray)
+          {
+            if(moduleArray?.filter((action)=> action == true).length == moduleArray?.length)
+              {
+                  isModuleCheckedVariable = true
+              }
+              else{
+                isModuleCheckedVariable = false
+              }
+          }
+        else{
+          isModuleCheckedVariable = false
+        }
+        return isModuleCheckedVariable
+      
+  }
+
+  const handleModuleCheck = (e,row,inx) =>{
+      let checked = e.target.checked
+      let module = row?.modulesName
+      let index = inx
+      let modules = values?.modules
+
+      if(checked){
+        modules[index][module] = {create:true,delete:true,update:true}
+        }
+        else{
+        modules[index][module] = {create:false,delete:false,update:false}
+      }
+
+      setFieldValue('modules',modules)
+  }
+
   const columns = [
     {
       name: 'Modules',
-      selector: row => row.modules,
-    },
-    {
-      name:'Create',
       button: true,
-		  cell: (row,index) => {
+      width:'250px',
+      cell: (row, index) => {
        
-        return(<div>
-        <input 
-              type="checkbox"  
-              className='h-[1rem] w-[1rem]'
-              name={`modules.${values?.modules?.findIndex((item)=>Object.keys(item)[0] == row?.modules)}.${row?.modules}.create`}
-              value={values?.modules?.[index]?.[row['modules']]?.create}
-              // checked={ values?.modules?.[index]?.[row['modules']]?.create }
-              checked={ values?.modules?.[index]?.[row['modules']]?.create }
-              onChange={handleChange}
-        />
-        
-      </div>)},
+        return (<div>
+          {
+            <div className="flex items-center mb-4">
+                    <input 
+                            id={values?.modules?.[index]} 
+                            type="checkbox" 
+                            // value={isModuleChecked(values?.modules?.[index]?.[row['modulesName']])} 
+                            checked={isModuleChecked( isModuleChecked(values?.modules?.[index]?.[row['modulesName']]) )}
+                            name={`modules${index}`}
+                            onChange={(e)=>handleModuleCheck(e,row,index)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                    />
+                    <label 
+                          htmlFor={modulesForDataTable[index]} 
+                          className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300 cursor-pointer"
+                    >
+                          {modulesForDataTable[index]}
+                    </label>
+                </div>
+            
+          }
+         
+
+        </div>)
+      }
     },
     {
-      name:'Update',
+      name: 'Create',
       button: true,
-		  cell:  (row,index) => <>
-        <input 
-            type="checkbox" 
+      cell: (row, index) => {
+        return (<div>
+          <input
+            type="checkbox"
             className='h-[1rem] w-[1rem]'
-            name={`modules.${values?.modules?.findIndex((item)=>Object.keys(item)[0] == row?.modules)}.${row?.modules}.update`}
-            value={values?.modules?.[index]?.[row['modules']]?.update}
-            checked={ values?.modules?.[index]?.[row['modules']]?.update }
+            name={`modules[${index}].${[row['modulesName']]}.create`}
+            // name={`modules[${index}].${[modulesForDataTable?.[index]]}.create`}
+            value={values?.modules?.[index]?.[row['modulesName']]?.create}
+            // value={values?.modules?.[index]?.[modulesForDataTable?.[index]]?.create}
+            checked={ values?.modules?.[index]?.[row['modulesName']]?.create }
+            // checked={ values?.modules?.[index]?.[modulesForDataTable?.[index]]?.create }
             onChange={handleChange}
+          />
+
+        </div>)
+      },
+    },
+    {
+      name: 'Update',
+      button: true,
+      cell: (row, index) => <>
+        <input
+          type="checkbox"
+          className='h-[1rem] w-[1rem]'
+          name={`modules[${index}].${[row['modulesName']]}.update`}
+          value={values?.modules?.[index]?.[row['modulesName']]?.update}
+          checked={values?.modules?.[index]?.[row['modulesName']]?.update}
+          onChange={handleChange}
         />
       </>,
     },
     {
-      name:'Delete',
+      name: 'Delete',
       button: true,
-		  cell:  (row,index) => <>
-        <input 
-              type="checkbox"  
-              className='h-[1rem] w-[1rem]'
-              name={`modules.${values?.modules?.findIndex((item)=>Object.keys(item)[0] == row?.modules)}.${row?.modules}.delete`}
-              value={values?.modules?.[index]?.[row['modules']]?.delete}
-              checked={ values?.modules?.[index]?.[row['modules']]?.delete }
-              onChange={handleChange}
+      cell: (row, index) => <>
+        <input
+          type="checkbox"
+          className='h-[1rem] w-[1rem]'
+          name={`modules[${index}].${[row['modulesName']]}.delete`}
+          value={values?.modules?.[index]?.[row['modulesName']]?.delete}
+          checked={values?.modules?.[index]?.[row['modulesName']]?.delete}
+          onChange={handleChange}
         />
       </>,
     },
+    {
+      name:'ModulesName',
+      selector: row => row.modulesName,
+      omit:true
+    }
   ];
-  
-  const data = modulesForDataTable?.map((item)=>({modules:item}))
+
+  const data = modulesForDataTable?.map((module)=>({modulesName:module}))
   return (
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4">Update Role</Typography>
 
-      {/*   <Button
-          variant="contained"
-          color="inherit"
-          startIcon={<Iconify icon="eva:plus-fill" />}
-          onClick={() => handleOpen("CreateUser")}
-        >
-          Update Role
-        </Button> */}
+      
       </Stack>
       <Box>
-        <form  onSubmit={handleSubmit} className='border '>
-                <TextField 
-                  id="outlined-basic" 
-                  label="Enter Role" 
-                  variant="outlined"
-                  name='role' 
-                  value={values?.role}
-                  onChange={handleChange}
-                  required
-                />
-                
-              <DataTable columns={columns} data={data} />
-              <button 
-                    type="submit" 
-                    className="text-white my-4 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-              >
-                Save
-              </button>
+        <form onSubmit={handleSubmit} className='border '>
+          <TextField
+            id="outlined-basic"
+            label="Enter Role"
+            variant="outlined"
+            name='role'
+            value={values?.role}
+            onChange={handleChange}
+            required
+          />
+
+          <DataTable columns={columns} data={data} />
+          <button
+            type="submit"
+            className="text-white my-4 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+          >
+            Save
+          </button>
         </form>
       </Box>
-     
+
     </Container>
   );
 }

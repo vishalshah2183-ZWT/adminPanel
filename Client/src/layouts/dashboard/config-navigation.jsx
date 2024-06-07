@@ -37,7 +37,11 @@ const navConfig = [
     path: '/addUsers',
     icon: icon('ic_user'),
   },
-  
+  {
+    title: 'Manage Module',
+    path: '/manageModule',
+    icon: icon('ic_user'),
+  },
   {
     title: 'Manage Roles',
     path: '/manageRoles',

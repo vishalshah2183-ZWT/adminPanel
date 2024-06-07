@@ -15,7 +15,7 @@ const Op = db.Op
 const getAllModules = async (req, res) => {
     // const users = await UsersModel.findAll({ attributes: ['email', 'role', 'id'] });
     const modules = await ModulesModel.findAll({
-        attributes: ['module'],
+        attributes: ['module','id'],
 
     });
     res.status(200).json(modules);
@@ -44,19 +44,22 @@ const createModule = async (req, res) => {
 //@route Put/api/Module/:id
 //@access public
 const deleteModule = async (req, res) => {
-   let id =await  req.params.id
+   let id = await  req.params.id
+   console.log(id)
    await ModulesModel.destroy({
         where:{
             id:id
         }
    })
-    const { module } = await req.body
+   /*  const { module } = await req.body
     const moduleExists = await ModulesModel.findAll({
         where:{module:module}
-    });
+    }); */
 
-    const modules = await ModulesModel.findAll();
-    res.status(200).send(modules);
+    const modules = await ModulesModel.findAll({
+        attributes: ['module','id'],
+    });
+    res.status(200).json(modules);
 }
 
 module.exports = {
