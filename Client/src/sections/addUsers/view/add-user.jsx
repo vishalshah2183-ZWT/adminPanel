@@ -122,7 +122,8 @@ export default function addUserPage() {
 
 
   const updateUser = (e) => {
-    
+    const { user,setUser } = useContext(MyContext)
+     
     e.preventDefault()
     axios.put("http://localhost:5001/users",userToBeUpdated).then((res) => {
       try {

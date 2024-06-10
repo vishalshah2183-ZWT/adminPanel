@@ -12,7 +12,6 @@ import Iconify from 'src/components/iconify';
 
 
 import DataTable from 'react-data-table-component';
-// import TableNoData from '../table-no-data';
 
 import axios from 'axios';
 
@@ -181,16 +180,6 @@ export default function ModulesPage() {
 
     }
   })
-
-  console.log(modules, "modules")
-  /*  const columns = {
-     name: 'Modules',
-     selector: row => row.module,
-   } */
-
-  /*  const data = [{
-     module:'hhhh'
-   }] */
 
   const columns = [
     {

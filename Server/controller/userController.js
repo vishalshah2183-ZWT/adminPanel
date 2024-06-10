@@ -57,6 +57,7 @@ const getAllUsers = async (req, res) => {
 //@route put /api/Users/:id
 //@access public
 const updateUser = async (req, res) => {
+    console.log(req.body)
     const { id, email, role } = await req.body
     await UsersModel.update({ id: id, email: email, role: role },
         { where: { id: id } }

@@ -19,7 +19,7 @@ import { Box, TextField } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 import { omit } from 'lodash';
-
+import { isModuleChecked  } from 'src/utils/HelperFunctions';
 
 
 export default function updateRolePage() {
@@ -72,7 +72,7 @@ export default function updateRolePage() {
 
  
    //Give Only Simple Object
-  const isModuleChecked = (moduleObject) => {
+ /*  const isModuleChecked = (moduleObject) => {
     let isModuleCheckedVariable = false
    
         let moduleArray = moduleObject &&  Object.keys(moduleObject).map((key) => (moduleObject[key]));
@@ -92,7 +92,7 @@ export default function updateRolePage() {
         }
         return isModuleCheckedVariable
       
-  }
+  } */
 
   const handleModuleCheck = (e,row,inx) =>{
       let checked = e.target.checked

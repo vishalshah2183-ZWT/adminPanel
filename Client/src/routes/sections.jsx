@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useContext, useEffect, useState } from 'react';
 import { Outlet, Navigate, useRoutes } from 'react-router-dom';
 
 import DashboardLayout from 'src/layouts/dashboard';
@@ -16,13 +16,24 @@ export const ProductsPage = lazy(() => import('src/pages/products'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 import Cookies from 'js-cookie';
 import { UpdateRoleView } from 'src/sections/updateRole/view';
+import { MyContext } from 'src/context/MyContext';
 // ----------------------------------------------------------------------
-const user = Cookies.get('user')
-console.log(user)
+
+
+
 export default function Router() {
+/*   const [user,setUser] = useState()
+  const [modules , setModules] =  useState([])
+  useEffect(()=>{
+    const User =Cookies.get('user') &&  JSON.parse(Cookies.get('user'))
+    setUser(User)
+    setModules(User?.access?.map((module)=> Object.keys(module)).flat())
+  },[Cookies]) */
+
+  const { user,setUser } = useContext(MyContext)
   const routes = useRoutes([
     {
-      element: user ? (
+      element: (user ||  Cookies.get('user') ) ? (
         <DashboardLayout>
           <Suspense>
             <Outlet />

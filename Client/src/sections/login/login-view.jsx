@@ -40,18 +40,21 @@ export default function LoginView() {
   const handleClick = () => {
     axios.post("http://localhost:5001/login", {userEmail:userEmail,userPassword:userPassword})
     .then((res) => {
-      try {
+      console.log(res.data,"LOGIN DATA")
+      setCookie('user', res.data, { path: '/' })
+      toast.success(`${res.data.email} Logged in...!!!`)
+      router.push('/')
+     /*  try {
         console.log(res.data)
         setCookie('user', res.data, { path: '/' })
-        toast.success(`${res.data.User} Logged in...!!!`)
         router.push('/');
         
       }
       catch (err) {
         console.log(err)
-      }
+      } */
     }).catch((err)=>{
-      toast.error(err.response.data.error)      
+      toast.error(err?.response?.data.error)      
     })
   };
 

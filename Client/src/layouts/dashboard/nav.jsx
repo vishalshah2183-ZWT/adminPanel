@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import Box from '@mui/material/Box';
@@ -22,7 +22,8 @@ import Scrollbar from 'src/components/scrollbar';
 
 import { NAV } from './config-layout';
 import navConfig from './config-navigation';
-
+import Cookies from 'js-cookie';
+import { isModuleEmpty } from 'src/utils/HelperFunctions';
 // ----------------------------------------------------------------------
 
 export default function Nav({ openNav, onCloseNav }) {
@@ -30,13 +31,45 @@ export default function Nav({ openNav, onCloseNav }) {
 
   const upLg = useResponsive('up', 'lg');
 
+  const [updatedNavConfig,setUpdatedNavConfig] = useState();
+
+  const [modules , setModules] =  useState([])
+  
+    useEffect(()=>{
+      const User = JSON.parse(Cookies.get('user'))
+      let ModulesVariable2 = []
+      User?.access?.map((module)=>{
+      
+         if(isModuleEmpty(module?.[Object.keys(module)[0]]))
+          {}
+          else{
+            ModulesVariable2?.push((Object.keys(module)[0])?.toLowerCase()?.replace(/[^a-z]/g, ""))
+          }
+      })
+     
+      setModules(ModulesVariable2?.map((module)=>module.toLowerCase()?.replace(/[^a-z]/g, "")))
+      setUpdatedNavConfig(navConfig?.filter((route)=> (ModulesVariable2?.includes(route?.title?.toLowerCase()?.replace(/[^a-z]/g, ""))) ))
+      console.log(ModulesVariable2)
+    },[Cookies])
+
+  
+
   useEffect(() => {
     if (openNav) {
       onCloseNav();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
+  const [user,setUser] = useState()
 
+  useEffect(()=>{
+    const user = Cookies.get('user')
+    setUser(user ? JSON.parse(user): '')
+  },[Cookies])
+
+  account.displayName = user?.email
+  account.email = user?.role
+  
   const renderAccount = (
     <Box
       sx={{
@@ -64,7 +97,7 @@ export default function Nav({ openNav, onCloseNav }) {
 
   const renderMenu = (
     <Stack component="nav" spacing={0.5} sx={{ px: 2 }}>
-      {navConfig.map((item) => (
+      {updatedNavConfig?.map((item) => (
         <NavItem key={item.title} item={item} />
       ))}
     </Stack>

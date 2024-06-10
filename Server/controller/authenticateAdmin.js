@@ -1,5 +1,6 @@
 const db = require('../models')
 const users = db.users
+const roles = db.roles
 const bcrypt = require('bcrypt');
 const router = require("../routes/productRoutes");
 const dotenv = require("dotenv").config()
@@ -15,7 +16,7 @@ const AuthenticateAdmin = async (req, res) => {
             email: userEmail,
         },
     });
-    console.log(user)
+    // console.log(user)
     if(!user)
         {
             return res.status(401).json({error:"User Not Found"})           
@@ -28,9 +29,13 @@ const AuthenticateAdmin = async (req, res) => {
     if (!passwordMatch) {
         return res.status(401).json({ error: 'Invalid Password' });
         }
-    console.log(user)
+  
     const token = await jwt.sign({id: user?.id},process.env.JWTKEY,{ expiresIn: '1h'})
-    res.status(200).json({ token:token, User:{email:user?.email,role:user?.role}});
+    AccessDetails = await roles.findOne({
+        where:{ role:user?.role }
+    })
+
+    res.status(200).json({ token:token, email:user?.email,role:user?.role , access:JSON.parse(AccessDetails?.module )});
 }
 
 module.exports = {

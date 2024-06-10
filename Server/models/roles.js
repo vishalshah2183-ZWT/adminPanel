@@ -15,10 +15,11 @@ module.exports = (sequelize, DataTypes) => {
   }
   roles.init({
     role: DataTypes.STRING,
-    module: DataTypes.STRING
+    module: DataTypes.TEXT('long')
   }, {
     sequelize,
     modelName: 'roles',
   });
+  // sequelize.sync({ force: true });
   return roles;
 };

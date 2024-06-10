@@ -21,9 +21,7 @@ import DataTable from 'react-data-table-component';
 import axios from 'axios';
 
 
-import { Box, CardActions, CardContent, CardMedia, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Modal, TextField } from '@mui/material';
-import { useFormik } from 'formik';
-import { omit, values } from 'lodash';
+
 import { useNavigate } from 'react-router-dom';
 
 
@@ -38,7 +36,6 @@ export default function manageRolesPage() {
       rolesVariable = rolesVariable?.map((data) => {
         return { ...data, module: JSON.parse(data?.module) }
       })
-      console.log(rolesVariable)
       setRoles(rolesVariable)
     })
   }, [])
@@ -104,7 +101,6 @@ export default function manageRolesPage() {
   ];
 
   let rolesForDataTable = (roles.length > 0) && (roles?.map((data) => ({ role: data?.role, id: data?.id })))
-  console.log(rolesForDataTable, "^^^")
   const data = rolesForDataTable
 
 

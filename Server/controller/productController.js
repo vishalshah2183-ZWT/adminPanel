@@ -5,6 +5,7 @@ const fs = require('fs');
 const { where } = require("sequelize");
 
 const getAllProduct = asyncHandler(async (req, res) => {
+    console.log(access)
     const products = await ProductsModel.findAll();
     return res.status(200).json(products)
 })
