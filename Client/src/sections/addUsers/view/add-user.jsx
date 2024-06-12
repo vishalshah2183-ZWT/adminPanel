@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Card from '@mui/material/Card';
@@ -24,6 +24,8 @@ import axios from 'axios';
 
 import { Box, CardActions, CardContent, CardMedia, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Modal, TextField } from '@mui/material';
 import { useFormik } from 'formik';
+import { MyContext } from 'src/context/MyContext';
+import { isAccessAllowed } from 'src/utils/HelperFunctions';
 
 const style = {
   position: "absolute",
@@ -59,9 +61,9 @@ export default function addUserPage() {
   const [userToBeDeleted, setUserToBeDeleted] = useState();
   const [createUserModal, setCreateUserModal] = useState(false);
   const [openedUser, setOpenedUser] = useState({})
-
+  const { user,setUser } = useContext(MyContext)
   useEffect(() => {
-    axios.get('http://localhost:5001/users').then((response) => {
+    axios.get('http://localhost:5001/users',{headers: {  Authorization: `${user?.token}` }}).then((response) => {
       setUsers(response?.data)
     })
   }, [])
@@ -69,14 +71,14 @@ export default function addUserPage() {
 
   /* EVENT HANDLERS STARTED*/
   const handleUpdate = (row) => {
-    axios.get(`http://localhost:5001/users/${row?.id}`).then((response) => {
+    axios.get(`http://localhost:5001/users/${row?.id}`,{headers: {  Authorization: `${user?.token}` }}).then((response) => {
       setUserToBeUpdated(response?.data)
       handleOpen("updateUser")
     })
   }
   const handleView = (row) => {
     handleOpen("viewUser")
-    axios.get(`http://localhost:5001/users/${row?.id}`).then((response) => {
+    axios.get(`http://localhost:5001/users/${row?.id}`,{headers: {  Authorization: `${user?.token}` }}).then((response) => {
       setOpenedUser(response?.data)
     })
   }
@@ -89,10 +91,12 @@ export default function addUserPage() {
   }
   const closeDeleteUserModal = (confirmDelete) => {
     if (confirmDelete) {
-      console.log(userToBeDeleted, "&&")
-      axios.delete(`http://localhost:5001/users/${userToBeDeleted?.id}`).then((response) => {
+      // console.log(userToBeDeleted, "&&")
+      axios.delete(`http://localhost:5001/users/${userToBeDeleted?.id}`,{headers: {  Authorization: `${user?.token}` }}).then((response) => {
         setUsers(response?.data)
         toast.error("User Deleted ");
+      }).catch((err)=>{
+        toast.error(err?.response?.data)
       })
     }
     setDeleteUserModal(false)
@@ -125,16 +129,18 @@ export default function addUserPage() {
     const { user,setUser } = useContext(MyContext)
      
     e.preventDefault()
-    axios.put("http://localhost:5001/users",userToBeUpdated).then((res) => {
+    axios.put("http://localhost:5001/users",userToBeUpdated,{headers: {  Authorization: `${user?.token}` }}).then((res) => {
       try {
         setUpdateUserModal(false)
-        console.log(res?.data?.users)
+        // console.log(res?.data?.users)
         setUsers(res?.data?.users)
         toast.success('User Updated Successfully')
       }
       catch (err) {
         console.log(err)
       }
+    }).catch((err)=>{
+      toast.error(err?.response?.data)
     })
 
 
@@ -157,6 +163,8 @@ export default function addUserPage() {
       button: true,
       width: "250px",
       cell: row => <div className="flex gap-2">
+        {
+         isAccessAllowed('Add Users', 'update') ?
         <Button
           variant="outlined"
           color="warning"
@@ -164,15 +172,23 @@ export default function addUserPage() {
         >
           Update
         </Button>
-     
-        <Button
-          variant="outlined"
-          color="error"
-          // onClick={() => handleDelete(row)}
-          onClick={() => openDeleteUserModal(row)}
-        >
-          Delete
-        </Button>
+        :
+        null
+    }
+    {
+         isAccessAllowed('Add Users', 'delete') ?
+         <Button
+         variant="outlined"
+         color="error"
+         // onClick={() => handleDelete(row)}
+         onClick={() => openDeleteUserModal(row)}
+       >
+         Delete
+       </Button>
+        :
+        null
+    }
+        
       </div>
     })
   const data = users
@@ -185,7 +201,7 @@ export default function addUserPage() {
   const { values, handleSubmit, handleChange, setFieldValue, resetForm } = useFormik({
     initialValues,
     onSubmit: () => {
-      axios.post("http://localhost:5001/users", values).then(res => {
+      axios.post("http://localhost:5001/users", values,{headers: {  Authorization: `${user?.token}` }}).then(res => {
         setUsers(res?.data?.users)
         toast.success('User Created Successfully')
       }).catch((err) => {
@@ -201,8 +217,9 @@ export default function addUserPage() {
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4">Add Users</Typography>
-
-        <Button
+      {
+         isAccessAllowed('Add Users', 'create') ?
+         <Button
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="eva:plus-fill" />}
@@ -210,6 +227,10 @@ export default function addUserPage() {
         >
           Add User
         </Button>
+        :
+        null
+      }
+        
       </Stack>
       <DataTable
         columns={columns}

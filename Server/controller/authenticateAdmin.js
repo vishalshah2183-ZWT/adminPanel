@@ -5,6 +5,8 @@ const bcrypt = require('bcrypt');
 const router = require("../routes/productRoutes");
 const dotenv = require("dotenv").config()
 const jwt = require('jsonwebtoken');
+
+
 //@desc Authenticates Admin
 //@route Post /Login
 //@access public
@@ -29,12 +31,13 @@ const AuthenticateAdmin = async (req, res) => {
     if (!passwordMatch) {
         return res.status(401).json({ error: 'Invalid Password' });
         }
-  
+    
     const token = await jwt.sign({id: user?.id},process.env.JWTKEY,{ expiresIn: '1h'})
     AccessDetails = await roles.findOne({
         where:{ role:user?.role }
     })
 
+    // res.status(200).json({ token:token, email:user?.email,role:user?.role , access:JSON.parse(AccessDetails?.module )});
     res.status(200).json({ token:token, email:user?.email,role:user?.role , access:JSON.parse(AccessDetails?.module )});
 }
 

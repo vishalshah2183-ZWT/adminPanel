@@ -1,4 +1,4 @@
-import { lazy, Suspense, useContext, useEffect, useState } from 'react';
+import { lazy, Suspense, useContext, useEffect, useMemo, useState } from 'react';
 import { Outlet, Navigate, useRoutes } from 'react-router-dom';
 
 import DashboardLayout from 'src/layouts/dashboard';
@@ -17,6 +17,7 @@ export const Page404 = lazy(() => import('src/pages/page-not-found'));
 import Cookies from 'js-cookie';
 import { UpdateRoleView } from 'src/sections/updateRole/view';
 import { MyContext } from 'src/context/MyContext';
+import { isModuleEmpty } from 'src/utils/HelperFunctions';
 // ----------------------------------------------------------------------
 
 
@@ -31,7 +32,17 @@ export default function Router() {
   },[Cookies]) */
 
   const { user,setUser } = useContext(MyContext)
-  const routes = useRoutes([
+  const [modules , setModules] =  useState([])
+
+  const { updatedNavConfig } = useContext(MyContext)
+  // console.log(updatedNavConfig)
+  // const pathsOfUpdatedNavConfig = updatedNavConfig?.map((item)=>item?.path)
+  const pathsOfUpdatedNavConfig = useMemo(()=>updatedNavConfig?.map((item)=>item?.path),[updatedNavConfig])
+  // console.log(pathsOfUpdatedNavConfig,"&&&")
+
+ 
+  const routes = user?.token != "DummyToken" ?
+  ( updatedNavConfig?.length > 1 &&  useRoutes([
     {
       element: (user ||  Cookies.get('user') ) ? (
         <DashboardLayout>
@@ -42,15 +53,16 @@ export default function Router() {
       ):
       <Navigate to ="/login" replace/>,
       children: [
-        { element: <IndexPage />, index: true },
-        { path: 'user', element: <UserPage /> },
-        { path: 'products', element: <ProductsPage /> },
-        { path: 'blog', element: <BlogPage /> },
-        { path: 'addUsers', element: <AddUsersPage/> },
-        { path: 'manageRoles', element: <ManageRolesPage/> },
-        { path: 'addRole', element: <AddRolePage/> },
-        { path: 'updateRole/:id', element: <UpdateRoleView/> },
-        { path: 'manageModule', element: <ManageModulePage/> },
+        // { element: <IndexPage />, index: true },
+        { path: '/' ,element: <IndexPage />, index: true },
+        { path: '/user', element: pathsOfUpdatedNavConfig?.includes('/user') ?<UserPage /> :  <Navigate to="/404" replace />},
+        { path: '/products', element: pathsOfUpdatedNavConfig?.includes('/products') ? <ProductsPage />:  <Navigate to="/404" replace /> },
+        { path: '/blog', element: pathsOfUpdatedNavConfig?.includes('/blog') ? <BlogPage />:  <Navigate to="/404" replace /> },
+        { path: '/addUsers', element: pathsOfUpdatedNavConfig?.includes('/addUsers') ? <AddUsersPage/>:  <Navigate to="/404" replace /> },
+        { path: '/manageRoles', element: pathsOfUpdatedNavConfig?.includes('/manageRoles') ? <ManageRolesPage/>:  <Navigate to="/404" replace /> },
+        { path: '/addRole', element: pathsOfUpdatedNavConfig?.includes('/manageRoles') ? <AddRolePage/>:  <Navigate to="/404" replace /> },
+        { path: '/updateRole/:id', element: pathsOfUpdatedNavConfig?.includes('/manageRoles') ? <UpdateRoleView/>:  <Navigate to="/404" replace /> },
+        { path: '/manageModule', element: pathsOfUpdatedNavConfig?.includes('/manageModule') ? <ManageModulePage/> :  <Navigate to="/404" replace />},
       ],
     },
     {
@@ -65,7 +77,16 @@ export default function Router() {
       path: '*',
       element: <Navigate to="/404" replace />,
     },
-  ]);
+  ])
 
-  return routes;
+  ):
+  (
+    useRoutes([
+    {
+      path: '*',
+      element: <LoginPage />,
+    }
+  ])
+  )
+return routes;
 }

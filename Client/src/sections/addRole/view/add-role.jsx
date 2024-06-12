@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Card from '@mui/material/Card';
@@ -24,6 +24,7 @@ import axios from 'axios';
 
 import { Box, CardActions, CardContent, CardMedia, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Modal, TextField } from '@mui/material';
 import { useFormik } from 'formik';
+import { MyContext } from 'src/context/MyContext';
 
 
 
@@ -32,7 +33,7 @@ import { useFormik } from 'formik';
 export default function addRolePage() {
   const [modulesForDataTable, setModulesForDataTable] = useState([]);
   const [modules,setModules] = useState()
-  
+  const { user,setUser } = useContext(MyContext)
   const initialValues = {
     role: "",
     modules: modules || []
@@ -43,9 +44,11 @@ export default function addRolePage() {
   const { values, handleSubmit ,handleChange,setFieldValue,resetForm} = useFormik({
     initialValues,
     onSubmit: (value,action) => {
-      axios.post('http://localhost:5001/roles',values).then((res) => {
+      axios.post('http://localhost:5001/roles',values ,{headers: {  Authorization: `${user?.token}` }}).then((res) => {
         alert(res?.data)
-      })    
+      }).catch((err)=>{
+        toast.error(err?.response?.data)
+      })   
       //RESET FORM
       setFieldValue('role','')
       setFieldValue('modules',modules)
@@ -54,7 +57,7 @@ export default function addRolePage() {
 
 
   useEffect(() => {
-    axios.get('http://localhost:5001/modules').then((res) => {
+    axios.get('http://localhost:5001/modules',{headers: {  Authorization: `${user?.token}` }}).then((res) => {
       let modulesVariable = res?.data?.map((item) => {
         return item?.module
       })

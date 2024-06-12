@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Card from '@mui/material/Card';
@@ -23,15 +23,16 @@ import axios from 'axios';
 
 
 import { useNavigate } from 'react-router-dom';
+import { MyContext } from 'src/context/MyContext';
 
 
 export default function manageRolesPage() {
 
 
   const [roles, setRoles] = useState([])
-
+  const { user,setUser } = useContext(MyContext)
   useEffect(() => {
-    axios.get('http://localhost:5001/roles').then((res) => {
+    axios.get('http://localhost:5001/roles',{headers: {  Authorization: `${user?.token}` }}).then((res) => {
       let rolesVariable = res?.data
       rolesVariable = rolesVariable?.map((data) => {
         return { ...data, module: JSON.parse(data?.module) }
@@ -50,21 +51,23 @@ export default function manageRolesPage() {
       let UserName = Object.keys(user)
 
     })
-    console.log(modulesDetails)
+    // console.log(modulesDetails)
 
   }
   const handleDeleteRole = (row) => {
-    console.log(row, "datatobeDeleted")
-    axios.delete(`http://localhost:5001/roles/${row?.id}`).then((response) => {
-      console.log(response, "res")
-      axios.get('http://localhost:5001/roles').then((res) => {
+    // console.log(row, "datatobeDeleted")
+    axios.delete(`http://localhost:5001/roles/${row?.id}`,{headers: {  Authorization: `${user?.token}` }}).then((response) => {
+      // console.log(response, "res")
+      axios.get('http://localhost:5001/roles',{headers: {  Authorization: `${user?.token}` }}).then((res) => {
         let rolesVariable = res?.data
         rolesVariable = rolesVariable?.map((data) => {
           return { ...data, module: JSON.parse(data?.module) }
         })
-        console.log(rolesVariable)
+        // console.log(rolesVariable)
         setRoles(rolesVariable)
       })
+    }).catch((err)=>{
+      toast.error(err?.response?.data)
     })
   }
   const columns = [
@@ -126,7 +129,7 @@ export default function manageRolesPage() {
         data={data}
       />
 
-    
+    <ToastContainer/>
     </Container>
   );
 }

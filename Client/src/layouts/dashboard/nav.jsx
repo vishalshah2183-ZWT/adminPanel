@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import Box from '@mui/material/Box';
@@ -23,7 +23,9 @@ import Scrollbar from 'src/components/scrollbar';
 import { NAV } from './config-layout';
 import navConfig from './config-navigation';
 import Cookies from 'js-cookie';
+
 import { isModuleEmpty } from 'src/utils/HelperFunctions';
+import { MyContext } from 'src/context/MyContext';
 // ----------------------------------------------------------------------
 
 export default function Nav({ openNav, onCloseNav }) {
@@ -31,29 +33,9 @@ export default function Nav({ openNav, onCloseNav }) {
 
   const upLg = useResponsive('up', 'lg');
 
-  const [updatedNavConfig,setUpdatedNavConfig] = useState();
-
-  const [modules , setModules] =  useState([])
-  
-    useEffect(()=>{
-      const User = JSON.parse(Cookies.get('user'))
-      let ModulesVariable2 = []
-      User?.access?.map((module)=>{
-      
-         if(isModuleEmpty(module?.[Object.keys(module)[0]]))
-          {}
-          else{
-            ModulesVariable2?.push((Object.keys(module)[0])?.toLowerCase()?.replace(/[^a-z]/g, ""))
-          }
-      })
-     
-      setModules(ModulesVariable2?.map((module)=>module.toLowerCase()?.replace(/[^a-z]/g, "")))
-      setUpdatedNavConfig(navConfig?.filter((route)=> (ModulesVariable2?.includes(route?.title?.toLowerCase()?.replace(/[^a-z]/g, ""))) ))
-      console.log(ModulesVariable2)
-    },[Cookies])
-
-  
-
+ const { updatedNavConfig } = useContext(MyContext)
+console.log(updatedNavConfig,"UpdatedNavConfig")
+    
   useEffect(() => {
     if (openNav) {
       onCloseNav();
@@ -156,6 +138,8 @@ export default function Nav({ openNav, onCloseNav }) {
   );
 
   return (
+    
+
     <Box
       sx={{
         flexShrink: { lg: 0 },

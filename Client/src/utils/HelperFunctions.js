@@ -1,3 +1,7 @@
+import { el } from "date-fns/locale";
+import { useContext } from "react";
+import { MyContext } from "src/context/MyContext";
+
 export const isModuleChecked = (moduleObject) => {
     let isModuleCheckedVariable = false
    
@@ -39,4 +43,35 @@ export const isModuleChecked = (moduleObject) => {
         }
         return isModuleEmptyVariable
       
+  }
+
+  export const isAccessAllowed = (module,action) => {
+    const { user,setUser , userDetails } = useContext(MyContext)
+    let isAccessAllowed= false
+    /* let accessDetails = user && user?.access
+
+    if(accessDetails?.find((item)=>Object.keys(item)[0] == module)?.[module]?.[action])
+      {
+        isAccessAllowed = true
+      }
+     else{
+      isAccessAllowed = false
+     } 
+    return(
+        isAccessAllowed
+    ) */
+      
+        let accessDetails = userDetails?.accessDetails
+
+
+        if(accessDetails?.find((item)=>Object.keys(item)[0] == module)?.[module]?.[action])
+          {
+            isAccessAllowed = true
+          }
+         else{
+          isAccessAllowed = false
+         } 
+        return(
+            isAccessAllowed
+        )
   }

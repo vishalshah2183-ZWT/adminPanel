@@ -1,6 +1,8 @@
 const express = require('express')
 const router = express.Router();
-
+const {
+  checkAccess
+} = require("../middleware/RBAC")
 
 const 
     {
@@ -28,7 +30,7 @@ const upload = multer({ storage: storage });
 
 
 // router.route("/").get(getAllProduct).post((upload.single('image')),createProduct).put((upload.single('image')),updateProduct);
-router.route("/").get(getAllProduct).post((upload.single('image')),createProduct).put((upload.single('image')),updateProduct);
-router.route("/:id").get(getProduct).delete(deleteProduct)
+router.route("/").get(getAllProduct).post(checkAccess({module:'All Products',action:'create'}),(upload.single('image')),createProduct).put(checkAccess({module:'All Products',action:'update'}),(upload.single('image')),updateProduct);
+router.route("/:id").get(getProduct).delete(checkAccess({module:'All Products',action:'delete'}),deleteProduct)
 
 module.exports = router;

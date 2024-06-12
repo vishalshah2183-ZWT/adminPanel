@@ -5,7 +5,7 @@ const fs = require('fs');
 const { where } = require("sequelize");
 
 const getAllProduct = asyncHandler(async (req, res) => {
-    console.log(access)
+    const token = await req.headers.authorization
     const products = await ProductsModel.findAll();
     return res.status(200).json(products)
 })
@@ -15,8 +15,8 @@ const getAllProduct = asyncHandler(async (req, res) => {
 //@route Post /Products
 //@access public
 const createProduct = async (req, res) => {
+    const token = await req.headers.authorization
     const { title, price, description, category, stock } = req.body;
-    console.log(req.body)
     const image = `/uploads/products/${req?.file?.filename}`
     await ProductsModel.create({ title: title, image: image, price: price, description: description, category: category, stock: stock })
     const product = await ProductsModel.findAll()
@@ -27,6 +27,7 @@ const createProduct = async (req, res) => {
 //@route Get /api/Products/:id
 //@access public
 const getProduct = asyncHandler(async (req, res) => {
+    const token = await req.headers.authorization
     let id = req.params.id
     const product = await ProductsModel.findByPk(id);
     res.status(200).json(product);
@@ -37,7 +38,7 @@ const getProduct = asyncHandler(async (req, res) => {
 //@route put /api/Products/:id
 //@access public
 const updateProduct = asyncHandler(async (req, res) => {
-    console.log(req.body)
+    const token = await req.headers.authorization
     const { id, title, price, description, category, stock } = req.body;
     const image = `/uploads/products/${req?.file?.filename}` 
     if ( image == '/uploads/products/undefined' ) {
@@ -59,6 +60,7 @@ const updateProduct = asyncHandler(async (req, res) => {
 //@route Delete /api/Products/:id
 //@access public
 const deleteProduct = asyncHandler(async (req, res) => {
+    const token = await req.headers.authorization
     let id = await req.params.id
     await ProductsModel.destroy({
         where: {

@@ -11,6 +11,7 @@ const Op = db.Op
 //@route Get / Roles
 //@access public
 const getAllRoles = asyncHandler(async (req, res) => {
+    const token = await req.headers.authorization
     const roles = await RolesModel.findAll({
         attributes:['id','role','module']
     });
@@ -21,6 +22,7 @@ const getAllRoles = asyncHandler(async (req, res) => {
 //@route Get / Role
 //@access public
 const getRole = asyncHandler(async (req, res) => {
+    const token = await req.headers.authorization
     const id = await req.params.id
     const role = await RolesModel.findByPk(id,{
         attributes:['id','role','module']
@@ -33,22 +35,32 @@ const getRole = asyncHandler(async (req, res) => {
 //@route Put / Roles/:id
 //@access public
 const updateRole = asyncHandler(async (req, res) => {
+    const token = await req.headers.authorization
     const { id, role } = await req.body;
+    console.log(role)
     const modules = await JSON.stringify(req.body.modules)
-    console.log(modules)
+    // console.log(modules)
     await RolesModel.update({ role: role, module:modules },
         { where: { id: id } }
     )
     const roles = await RolesModel.findAll({
         attributes:['id','role','module']
     });
-    return res.status(200).json(roles)
+
+   
+    let accessDetails = await RolesModel.findOne({
+        where:{ role : role },
+        attributes:['module'],
+    })
+    accessDetails = await JSON.parse(accessDetails?.module)
+    return res.status(200).json(accessDetails)
 })
 
 //@desc Post all Roles
 //@route Post / Roles
 //@access public
 const addAllRoles = asyncHandler(async (req, res) => {
+    const token = await req.headers.authorization
     let role = await req?.body?.role
     let module = await JSON.stringify(req?.body?.modules)
     let roleExist = await RolesModel.findAll({
@@ -56,7 +68,7 @@ const addAllRoles = asyncHandler(async (req, res) => {
             role: role
         }
     })
-    console.log(roleExist)
+    // console.log(roleExist)
     if(roleExist?.length > 0)
         {
             return res.status(201).send("Role Already Exists")
@@ -70,15 +82,13 @@ const addAllRoles = asyncHandler(async (req, res) => {
 //@route Post / Roles
 //@access public
 const deleteRole = asyncHandler(async (req, res) => {
+    const token = await req.headers.authorization
     let id = req.params.id
     RolesModel.destroy({
         where: {
             id: id
         }
     })
-    // const roles = await RolesModel.findAll({
-    //     attributes:['id','role','module']
-    // });
     return res.status(200).send('Role Deleted')
 })
 

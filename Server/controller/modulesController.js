@@ -13,7 +13,7 @@ const Op = db.Op
 //@route Get /api/Users/:id
 //@access public
 const getAllModules = async (req, res) => {
-    // const users = await UsersModel.findAll({ attributes: ['email', 'role', 'id'] });
+    const token = await req.headers.authorization
     const modules = await ModulesModel.findAll({
         attributes: ['module','id'],
 
@@ -25,7 +25,7 @@ const getAllModules = async (req, res) => {
 //@route Post/api/Users/:id
 //@access public
 const createModule = async (req, res) => {
-   
+    const token = await req.headers.authorization
     const { module } = await req.body
     const moduleExists = await ModulesModel.findAll({
         where:{module:module}
@@ -44,8 +44,8 @@ const createModule = async (req, res) => {
 //@route Put/api/Module/:id
 //@access public
 const deleteModule = async (req, res) => {
+    const token = await req.headers.authorization
    let id = await  req.params.id
-   console.log(id)
    await ModulesModel.destroy({
         where:{
             id:id

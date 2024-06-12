@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Card from '@mui/material/Card';
@@ -18,6 +18,8 @@ import axios from 'axios';
 import { Box, CardActions, CardContent, CardMedia, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Modal, TextField } from '@mui/material';
 import { useFormik } from 'formik';
 import { omit } from 'lodash';
+import { MyContext } from 'src/context/MyContext';
+import { isAccessAllowed } from 'src/utils/HelperFunctions';
 
 // ----------------------------------------------------------------------
 
@@ -60,9 +62,9 @@ export default function ModulesPage() {
   const [openedProduct, setOpenedProduct] = useState({})
   const [previewUrl, setPreviewUrl] = useState(null)
   const [modules, setModules] = useState()
-
+  const { user,setUser } = useContext(MyContext)
   useEffect(() => {
-    axios.get('http://localhost:5001/modules').then((response) => {
+    axios.get('http://localhost:5001/modules',{headers: {  Authorization: `${user?.token}` }}).then((response) => {
       setModules(response?.data)
     })
   }, [])
@@ -71,14 +73,14 @@ export default function ModulesPage() {
 
   /* EVENT HANDLERS STARTED*/
   const handleUpdate = (row) => {
-    axios.get(`http://localhost:5001/products/${row?.id}`).then((response) => {
+    axios.get(`http://localhost:5001/products/${row?.id}`,{headers: {  Authorization: `${user?.token}` }}).then((response) => {
       setProductToBeUpdated(response?.data)
     })
     handleOpen("updateProduct")
   }
   const handleView = (row) => {
     handleOpen("viewProduct")
-    axios.get(`http://localhost:5001/products/${row?.id}`).then((response) => {
+    axios.get(`http://localhost:5001/products/${row?.id}`,{headers: {  Authorization: `${user?.token}` }}).then((response) => {
       setOpenedProduct(response?.data)
     })
   }
@@ -91,9 +93,11 @@ export default function ModulesPage() {
   }
   const closeDeleteProductModal = (confirmDelete) => {
     if (confirmDelete) {
-      axios.delete(`http://localhost:5001/modules/${moduleToBeDeleted?.id}`).then((response) => {
+      axios.delete(`http://localhost:5001/modules/${moduleToBeDeleted?.id}`,{headers: {  Authorization: `${user?.token}` }}).then((response) => {
         setModules(response?.data)
         toast.error("Product Deleted ");
+      }).catch((err)=>{
+        toast.error(err?.response?.data)
       })
     }
     setDeleteProductModal(false)
@@ -144,6 +148,8 @@ export default function ModulesPage() {
       catch (err) {
         console.log(err)
       }
+    }).catch((err)=>{
+      toast.error(err?.response?.data)
     })
 
 
@@ -162,16 +168,18 @@ export default function ModulesPage() {
   const { values, handleSubmit, handleChange, setFieldValue, resetForm } = useFormik({
     initialValues,
     onSubmit: async() => {
-      await axios.post('http://localhost:5001/modules', values).then((res) => {
+      await axios.post('http://localhost:5001/modules', values ,{headers: {  Authorization: `${user?.token}` }}).then((res) => {
         if (res.status == 200) {
           toast.success(res?.data)
         }
         else {
           toast.error(res?.data)
         }
+      }).catch((err)=>{
+        toast.error(err?.response?.data)
       })
 
-      await axios.get('http://localhost:5001/modules').then((response) => {
+      await axios.get('http://localhost:5001/modules',{headers: {  Authorization: `${user?.token}` }}).then((response) => {
         setModules(response?.data)
         setCreateProductModal(false)
         resetForm()
@@ -190,37 +198,48 @@ export default function ModulesPage() {
       name:'Id',
       selector:row => row.id,
       omit:true
-    },
-    {
-      name: 'ACTIONS',
-      button: true,
-      width: "250px",
-      cell: row => <div className="flex gap-2">
-        <Button
-          variant="outlined"
-          color="error"
-          onClick={() => handleDeleteModule(row)}
-        >
-          Delete
-        </Button>
-      </div>
     }
   ];
+  if(isAccessAllowed('Manage Module', 'delete'))
 
+    {
+      columns?.push( {
+        name: 'ACTIONS',
+        button: true,
+        width: "250px",
+        cell: row => <div className="flex gap-2">
+  
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={() => handleDeleteModule(row)}
+          >
+            Delete
+          </Button>
+        </div>
+      })
+    }
   const data = modules
+
+
   return (
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4">All Module</Typography>
-
-        <Button
-          variant="contained"
-          color="inherit"
-          startIcon={<Iconify icon="eva:plus-fill" />}
-          onClick={() => handleOpen("CreateProduct")}
-        >
-          Add Module
-        </Button>
+        <Typography variant="h4">Manage Module</Typography>
+        {
+              isAccessAllowed('Manage Module', 'delete') ?
+              <Button
+              variant="contained"
+              color="inherit"
+              startIcon={<Iconify icon="eva:plus-fill" />}
+              onClick={() => handleOpen("CreateProduct")}
+            >
+              Add Module
+            </Button>
+            :
+            null
+        }
+        
       </Stack>
 
       <DataTable

@@ -9,8 +9,9 @@ const Op = db.Op
 //@route Post /Users
 //@access public
 const createUser = async (req, res) => {
+    const token = await req.headers.authorization
     const { email, password, role } = await req.body
-    console.log(password)
+    // console.log(password)
     let emailExists = await UsersModel.findAll({where:{email:email}})
     if(emailExists?.length > 0)
         {
@@ -32,6 +33,7 @@ const createUser = async (req, res) => {
 //@route Get /api/Users/:id
 //@access public
 const getUser = async (req, res) => {
+    const token = await req.headers.authorization
     let id = await req.params.id
     const user = await UsersModel.findByPk(id, { attributes: ['email', 'role', 'id'] });
     res.status(200).json(user);
@@ -42,6 +44,7 @@ const getUser = async (req, res) => {
 //@route Get /api/Users/:id
 //@access public
 const getAllUsers = async (req, res) => {
+    const token = await req.headers.authorization
     // const users = await UsersModel.findAll({ attributes: ['email', 'role', 'id'] });
     const users = await UsersModel.findAll({
         attributes: ['email', 'role', 'id'],
@@ -49,7 +52,7 @@ const getAllUsers = async (req, res) => {
             role: { [Op.ne]: 'super_admin' },
         },
     });
-    console.log(users)
+    // console.log(users)
     res.status(200).json(users);
 }
 
@@ -57,7 +60,7 @@ const getAllUsers = async (req, res) => {
 //@route put /api/Users/:id
 //@access public
 const updateUser = async (req, res) => {
-    console.log(req.body)
+    const token = await req.headers.authorization
     const { id, email, role } = await req.body
     await UsersModel.update({ id: id, email: email, role: role },
         { where: { id: id } }
@@ -76,6 +79,7 @@ const updateUser = async (req, res) => {
 //@route Delete /api/Users/:id
 //@access public
 const deleteUser = async (req, res) => {
+    const token = await req.headers.authorization
     let id = req.params.id
     UsersModel.destroy({
         where: {
@@ -97,4 +101,4 @@ module.exports = {
     getUser,
     createUser,
     getAllUsers
-}
+}  

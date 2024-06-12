@@ -3,31 +3,24 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
+
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import TableBody from '@mui/material/TableBody';
+
 import Typography from '@mui/material/Typography';
-import TableContainer from '@mui/material/TableContainer';
-import TablePagination from '@mui/material/TablePagination';
-import { users } from 'src/_mock/user';
+
 
 import Iconify from 'src/components/iconify';
-import Scrollbar from 'src/components/scrollbar';
+
 
 import DataTable from 'react-data-table-component';
 // import TableNoData from '../table-no-data';
-import UserTableRow from '../user-table-row';
-import UserTableHead from '../user-table-head';
-import TableEmptyRows from '../table-empty-rows';
-import UserTableToolbar from '../user-table-toolbar';
-import { emptyRows, applyFilter, getComparator } from '../utils';
 import axios from 'axios';
-import { object } from 'prop-types';
-import { imagefrombuffer } from "imagefrombuffer";
+
 import { Box, CardActions, CardContent, CardMedia, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Modal, TextField } from '@mui/material';
 import { useFormik } from 'formik';
 import { MyContext } from 'src/context/MyContext';
+import { isAccessAllowed } from 'src/utils/HelperFunctions';
 // ----------------------------------------------------------------------
 
 
@@ -66,29 +59,32 @@ export default function UserPage() {
   const [openedProduct, setOpenedProduct] = useState({})
   const [previewUrl, setPreviewUrl] = useState(null)
 
-  const { user,setUser } = useContext(MyContext) 
-  console.log(user,"USER")
+
   useEffect(() => {
-    axios.get('http://localhost:5001/products',user).then((response) => {
+    axios.get('http://localhost:5001/products', { headers: { Authorization: `${user?.token}` } }).then((response) => {
       setProducts(response?.data)
     })
 
-    
+
   }, [])
 
+
+  const { user, setUser } = useContext(MyContext)
 
 
   /* EVENT HANDLERS STARTED*/
   const handleUpdate = (row) => {
-    axios.get(`http://localhost:5001/products/${row?.id}`).then((response) => {
+    axios.get(`http://localhost:5001/products/${row?.id}`, { headers: { Authorization: `${user?.token}` } }).then((response) => {
       setProductToBeUpdated(response?.data)
     })
     handleOpen("updateProduct")
   }
   const handleView = (row) => {
     handleOpen("viewProduct")
-    axios.get(`http://localhost:5001/products/${row?.id}`).then((response) => {
+    axios.get(`http://localhost:5001/products/${row?.id}`, { headers: { Authorization: `${user?.token}` } }).then((response) => {
       setOpenedProduct(response?.data)
+    }).catch((err) => {
+      toast.error(err?.response?.data)
     })
   }
 
@@ -100,10 +96,14 @@ export default function UserPage() {
   }
   const closeDeleteProductModal = (confirmDelete) => {
     if (confirmDelete) {
-      axios.delete(`http://localhost:5001/products/${productToBeDeleted?.id}`).then((response) => {
+      axios.delete(`http://localhost:5001/products/${productToBeDeleted?.id}`, { headers: { Authorization: `${user?.token}` } }).then((response) => {
         setProducts(response?.data)
         toast.error("Product Deleted ");
+      }).catch((err) => {
+        toast.error(err?.response?.data)
       })
+
+
     }
     setDeleteProductModal(false)
   }
@@ -143,27 +143,28 @@ export default function UserPage() {
 
 
     axios.put("http://localhost:5001/products", formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data', Authorization: `${user?.token}` }
     }).then((res) => {
       try {
-        setUpdateProductModal(false)
+        // setUpdateProductModal(false)
         setProducts(res?.data?.product)
         toast.success('Product Updated Successfully')
       }
       catch (err) {
         console.log(err)
       }
+    }).catch((err) => {
+      toast.error(err?.response?.data)
     })
-
+    setUpdateProductModal(false)
 
   }
 
   const previewImageHandler = (e) => {
     const file = e.target.files[0]
-    if(file)
-      {
-        setPreviewUrl(URL.createObjectURL(file))
-      }
+    if (file) {
+      setPreviewUrl(URL.createObjectURL(file))
+    }
   }
   /* EVENT HANDLERS ENDED*/
 
@@ -173,7 +174,7 @@ export default function UserPage() {
   let productColumns = (Object.keys(products?.[0] || {}))?.filter((col) => (col !== "img"))?.map((col) => col.toLocaleUpperCase())
   productColumns.splice(5, 1)
 
-  const columns = productColumns?.map((column) => ({ name: column, selector: row => row?.[column?.toLocaleLowerCase()],sortable:true}))
+  const columns = productColumns?.map((column) => ({ name: column, selector: row => row?.[column?.toLocaleLowerCase()], sortable: true }))
 
   columns?.push(
     {
@@ -181,13 +182,19 @@ export default function UserPage() {
       button: true,
       width: "250px",
       cell: row => <div className="flex gap-2">
-        <Button
-          variant="outlined"
-          color="warning"
-          onClick={() => handleUpdate(row)}
-        >
-          Update
-        </Button>
+        {
+          isAccessAllowed('All Products', 'update') ?
+            (<Button
+              variant="outlined"
+              color="warning"
+              onClick={() => handleUpdate(row)}
+            >
+              Update
+            </Button>)
+            :
+            null
+        }
+
         <Button
           variant="outlined"
           color="info"
@@ -195,14 +202,19 @@ export default function UserPage() {
         >
           View
         </Button>
-        <Button
-          variant="outlined"
-          color="error"
-          // onClick={() => handleDelete(row)}
-          onClick={() => openDeleteProductModal(row)}
-        >
-          Delete
-        </Button>
+        {
+          isAccessAllowed('All Products', 'delete') ?
+            (<Button
+              variant="outlined"
+              color="error"
+
+              onClick={() => openDeleteProductModal(row)}
+            >
+              Delete
+            </Button>)
+            :
+            null
+        }
       </div>
     })
   columns.splice(1, 0, {
@@ -244,10 +256,12 @@ export default function UserPage() {
 
 
       axios.post("http://localhost:5001/products", formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data', Authorization: `${user?.token}` }
       }).then(res => {
         setProducts(res?.data?.product)
         toast.success('Product Created Successfully')
+      }).catch((err) => {
+        toast.error(err?.response?.data)
       })
       setCreateProductModal(false)
       resetForm()
@@ -259,81 +273,21 @@ export default function UserPage() {
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4">All Products</Typography>
-
-        <Button
-          variant="contained"
-          color="inherit"
-          startIcon={<Iconify icon="eva:plus-fill" />}
-          onClick={() => handleOpen("CreateProduct")}
-        >
-          Add Product
-        </Button>
+        {
+          isAccessAllowed('All Products', 'create') ?
+            <Button
+              variant="contained"
+              color="inherit"
+              startIcon={<Iconify icon="eva:plus-fill" />}
+              onClick={() => handleOpen("CreateProduct")}
+            >
+              Add Product
+            </Button>
+            :
+            null
+        }
       </Stack>
 
-      {/* <Card>
-        <UserTableToolbar
-        numSelected={selected.length}
-        filterName={filterName}
-        onFilterName={handleFilterByName}
-        />
-        
-        <Scrollbar>
-        <TableContainer sx={{ overflow: 'unset' }}>
-            <Table sx={{ minWidth: 800 }}>
-            <UserTableHead
-            order={order}
-            orderBy={orderBy}
-            rowCount={users.length}
-            numSelected={selected.length}
-            onRequestSort={handleSort}
-            onSelectAllClick={handleSelectAllClick}
-            headLabel={[
-              { id: 'name', label: 'Name' },
-              { id: 'company', label: 'Company' },
-              { id: 'role', label: 'Role' },
-              { id: 'isVerified', label: 'Verified', align: 'center' },
-              { id: 'status', label: 'Status' },
-              { id: '' },
-            ]}
-            />
-            <TableBody>
-                {dataFiltered
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((row) => (
-                    <UserTableRow
-                    key={row.id}
-                    name={row.name}
-                    role={row.role}
-                    status={row.status}
-                    company={row.company}
-                    avatarUrl={row.avatarUrl}
-                    isVerified={row.isVerified}
-                    selected={selected.indexOf(row.name) !== -1}
-                    handleClick={(event) => handleClick(event, row.name)}
-                    />
-                  ))}
-                  
-                  <TableEmptyRows
-                  height={77}
-                  emptyRows={emptyRows(page, rowsPerPage, users.length)}
-                  />
-                  
-                  {notFound && <TableNoData query={filterName} />}
-                  </TableBody>
-                  </Table>
-                  </TableContainer>
-                  </Scrollbar>
-                  
-                  <TablePagination
-                  page={page}
-                  component="div"
-                  count={users.length}
-                  rowsPerPage={rowsPerPage}
-                  onPageChange={handleChangePage}
-                  rowsPerPageOptions={[5, 10, 25]}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  />
-                </Card> */}
 
 
 
@@ -465,7 +419,7 @@ export default function UserPage() {
                 <div className="relative z-0 w-full mb-5 group">
                   <div className='flex gap-4'>
                     <input type="file" name="image" onChange={(e) => { setProductToBeUpdated({ ...productToBeUpdated, image: e.target.files[0] }); previewImageHandler(e) }} id="image" className="block py-2.5 px-0 w-[50%] text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
-                    <img src={(typeof productToBeUpdated.image == 'object' ) ? previewUrl : `${process.env.VITE_BACKEND_DOMAIN}${productToBeUpdated?.image}`  } alt="" className='h-[50px] w-[50px]' />
+                    <img src={(typeof productToBeUpdated.image == 'object') ? previewUrl : `${process.env.VITE_BACKEND_DOMAIN}${productToBeUpdated?.image}`} alt="" className='h-[50px] w-[50px]' />
                   </div>
                   <label htmlFor="file" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Image</label>
                 </div>
@@ -504,7 +458,7 @@ export default function UserPage() {
 
         {/* TOAST CONTAINER */}
         <ToastContainer />
-        
+
       </div>
     </Container>
   );

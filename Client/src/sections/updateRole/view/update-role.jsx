@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Card from '@mui/material/Card';
@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import { users } from 'src/_mock/user';
-
+import Cookies from 'js-cookie';
 import Iconify from 'src/components/iconify';
 import axios from 'axios';
 import { useFormik } from 'formik';
@@ -20,6 +20,7 @@ import { useParams } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 import { omit } from 'lodash';
 import { isModuleChecked  } from 'src/utils/HelperFunctions';
+import { MyContext } from 'src/context/MyContext';
 
 
 export default function updateRolePage() {
@@ -27,7 +28,7 @@ export default function updateRolePage() {
 
   const [role, setRole] = useState()
   const [modulesForDataTable, setModulesForDataTable] = useState([]);
-
+  const { user,setUser } = useContext(MyContext)
 
 
 
@@ -44,15 +45,25 @@ export default function updateRolePage() {
   const { values, setFieldValue, handleChange, handleSubmit } = useFormik({
     initialValues,
     onSubmit: (value, action) => {
-      axios.put('http://localhost:5001/roles', values).then((res) => {
-        alert(`${role?.role} Updated...!!`)
+      axios.put('http://localhost:5001/roles', values ,{headers: {  Authorization: `${user?.token}` }}).then((res) => {
+        // alert(`${role?.role} Updated...!!`)
+
+        // console.log(res?.data,"Roles Details")
+        // let existingCookie =  user
+        // console.log(user,"COOKIES")
+        
+        // Cookies.set('user',JSON.stringify({...existingCookie,access:res?.data}))
+        
+        toast.success('Role Updated...!')
+      }).catch((err)=>{
+        toast.error(err?.response?.data)
       })
 
 
     }
   })
   useEffect(() => {
-    axios.get(`http://localhost:5001/roles/${id}`).then((response) => {
+    axios.get(`http://localhost:5001/roles/${id}`,{headers: {  Authorization: `${user?.token}` }}).then((response) => {
       let roleVariable = response?.data
       roleVariable = { ...roleVariable, module: JSON.parse(roleVariable?.module) }
       setRole(roleVariable)
@@ -64,35 +75,15 @@ export default function updateRolePage() {
         let modulesVariable = roleVariable?.module?.map((item)=>(Object.keys(item)[0]))
        
         setModulesForDataTable(modulesVariable)
+    }).catch((err)=>{
+      toast.error(err?.response?.data)
     })
   }, [])
 
 
 
 
- 
-   //Give Only Simple Object
- /*  const isModuleChecked = (moduleObject) => {
-    let isModuleCheckedVariable = false
-   
-        let moduleArray = moduleObject &&  Object.keys(moduleObject).map((key) => (moduleObject[key]));
-        console.log(moduleArray)  
-        if(moduleArray)
-          {
-            if(moduleArray?.filter((action)=> action == true).length == moduleArray?.length)
-              {
-                  isModuleCheckedVariable = true
-              }
-              else{
-                isModuleCheckedVariable = false
-              }
-          }
-        else{
-          isModuleCheckedVariable = false
-        }
-        return isModuleCheckedVariable
-      
-  } */
+
 
   const handleModuleCheck = (e,row,inx) =>{
       let checked = e.target.checked
@@ -227,7 +218,7 @@ export default function updateRolePage() {
           </button>
         </form>
       </Box>
-
+      <ToastContainer/>
     </Container>
   );
 }
