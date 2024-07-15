@@ -92,10 +92,10 @@ export default function updateRolePage() {
       let modules = values?.modules
 
       if(checked){
-        modules[index][module] = {create:true,delete:true,update:true}
+        modules[index][module] = {create:true,delete:true,update:true,read:true}
         }
         else{
-        modules[index][module] = {create:false,delete:false,update:false}
+        modules[index][module] = {create:false,delete:false,update:false,read:true}
       }
 
       setFieldValue('modules',modules)
@@ -133,6 +133,23 @@ export default function updateRolePage() {
 
         </div>)
       }
+    },
+    {
+      name: 'Read',
+      button: true,
+      cell: (row, index) => {
+        return (<div>
+          <input
+            type="checkbox"
+            className='h-[1rem] w-[1rem]'
+            name={`modules[${index}].${[row['modulesName']]}.read`}
+            value={values?.modules?.[index]?.[row['modulesName']]?.read}
+            checked={ values?.modules?.[index]?.[row['modulesName']]?.read }
+            onChange={handleChange}
+          />
+
+        </div>)
+      },
     },
     {
       name: 'Create',

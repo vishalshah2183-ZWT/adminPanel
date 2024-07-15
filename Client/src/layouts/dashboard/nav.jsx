@@ -34,7 +34,7 @@ export default function Nav({ openNav, onCloseNav }) {
   const upLg = useResponsive('up', 'lg');
 
  const { updatedNavConfig } = useContext(MyContext)
-console.log(updatedNavConfig,"UpdatedNavConfig")
+// console.log(updatedNavConfig,"UpdatedNavConfig")
     
   useEffect(() => {
     if (openNav) {

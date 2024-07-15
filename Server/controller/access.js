@@ -22,7 +22,6 @@ const getAccessDetails = async (req, res) => {
         accessDetails = await JSON.parse(accessDetails?.module)
         
         res.status(200).json({email:email,accessDetails:accessDetails});
-        // res.status(200).json('heyyy')
 }   
 
 

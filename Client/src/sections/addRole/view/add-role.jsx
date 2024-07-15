@@ -25,6 +25,7 @@ import axios from 'axios';
 import { Box, CardActions, CardContent, CardMedia, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Modal, TextField } from '@mui/material';
 import { useFormik } from 'formik';
 import { MyContext } from 'src/context/MyContext';
+import { isModuleChecked } from 'src/utils/HelperFunctions';
 
 
 
@@ -44,11 +45,12 @@ export default function addRolePage() {
   const { values, handleSubmit ,handleChange,setFieldValue,resetForm} = useFormik({
     initialValues,
     onSubmit: (value,action) => {
-      axios.post('http://localhost:5001/roles',values ,{headers: {  Authorization: `${user?.token}` }}).then((res) => {
+      console.log(value,"value")
+      /* axios.post('http://localhost:5001/roles',values ,{headers: {  Authorization: `${user?.token}` }}).then((res) => {
         alert(res?.data)
       }).catch((err)=>{
         toast.error(err?.response?.data)
-      })   
+      }) */   
       //RESET FORM
       setFieldValue('role','')
       setFieldValue('modules',modules)
@@ -61,7 +63,7 @@ export default function addRolePage() {
       let modulesVariable = res?.data?.map((item) => {
         return item?.module
       })
-      let modulesForForm =  modulesVariable?.map((module) => ({ [module]: { create: false, update: false, delete: false } }))
+      let modulesForForm =  modulesVariable?.map((module) => ({ [module]: { create: false, update: false, delete: false , read:false} }))
       setModulesForDataTable(modulesVariable)
       setFieldValue('modules',modulesForForm)
       setModules(modulesForForm)
@@ -70,7 +72,7 @@ export default function addRolePage() {
 
 
   //Give Only Simple Object
-  const isModuleChecked = (moduleObject) => {
+  /* const isModuleChecked = (moduleObject) => {
     let isModuleCheckedVariable = false
    
         let moduleArray = moduleObject &&  Object.keys(moduleObject).map((key) => (moduleObject[key])); 
@@ -89,7 +91,7 @@ export default function addRolePage() {
         }
         return isModuleCheckedVariable
       
-  }
+  } */
   const handleModuleCheck = (e,row,inx) =>{
     let checked = e.target.checked
     let module = row?.modulesName
@@ -97,10 +99,10 @@ export default function addRolePage() {
     let modules = values?.modules
 
     if(checked){
-      modules[index][module] = {create:true,delete:true,update:true}
+      modules[index][module] = {create:true,delete:true,update:true,read:true}
       }
       else{
-      modules[index][module] = {create:false,delete:false,update:false}
+      modules[index][module] = {create:false,delete:false,update:false,read:false}
     }
 
     setFieldValue('modules',modules)
@@ -120,7 +122,6 @@ export default function addRolePage() {
                     <input 
                             id={values?.modules?.[index]} 
                             type="checkbox" 
-                            // value={isModuleChecked(values?.modules?.[index]?.[row['modulesName']])} 
                             checked={isModuleChecked( isModuleChecked(values?.modules?.[index]?.[row['modulesName']]) )}
                             name={`modules${index}`}
                             onChange={(e)=>handleModuleCheck(e,row,index)}
@@ -141,6 +142,23 @@ export default function addRolePage() {
       }
     },
     {
+      name: 'Read',
+      button: true,
+      cell: (row, index) => {
+        return (<div>
+          <input
+            type="checkbox"
+            className='h-[1rem] w-[1rem]'
+            name={`modules[${index}].${[row['modulesName']]}.read`}
+            value={values?.modules?.[index]?.[row['modulesName']]?.read}
+            checked={ values?.modules?.[index]?.[row['modulesName']]?.read }
+            onChange={handleChange}
+          />
+
+        </div>)
+      },
+    },
+    {
       name: 'Create',
       button: true,
       cell: (row, index) => {
@@ -149,11 +167,8 @@ export default function addRolePage() {
             type="checkbox"
             className='h-[1rem] w-[1rem]'
             name={`modules[${index}].${[row['modulesName']]}.create`}
-            // name={`modules[${index}].${[modulesForDataTable?.[index]]}.create`}
             value={values?.modules?.[index]?.[row['modulesName']]?.create}
-            // value={values?.modules?.[index]?.[modulesForDataTable?.[index]]?.create}
             checked={ values?.modules?.[index]?.[row['modulesName']]?.create }
-            // checked={ values?.modules?.[index]?.[modulesForDataTable?.[index]]?.create }
             onChange={handleChange}
           />
 
@@ -197,7 +212,6 @@ export default function addRolePage() {
 
   const data = modulesForDataTable?.map((module)=>({modulesName:module}))
   
-  console.log(values)
   return (
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>

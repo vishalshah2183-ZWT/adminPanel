@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 
 const User = JSON.parse(Cookies.get('user') || true);
 
-console.log("account")
+// console.log("account")
 export const account = {
   displayName: User?.email,
   email: User?.role,

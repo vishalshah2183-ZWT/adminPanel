@@ -31,7 +31,10 @@ export default function Router() {
     setModules(User?.access?.map((module)=> Object.keys(module)).flat())
   },[Cookies]) */
 
-  const { user,setUser } = useContext(MyContext)
+  const { user,setUser , cookieFlag } = useContext(MyContext)
+
+
+
   const [modules , setModules] =  useState([])
 
   const { updatedNavConfig } = useContext(MyContext)
@@ -40,8 +43,10 @@ export default function Router() {
   const pathsOfUpdatedNavConfig = useMemo(()=>updatedNavConfig?.map((item)=>item?.path),[updatedNavConfig])
   // console.log(pathsOfUpdatedNavConfig,"&&&")
 
- 
-  const routes = user?.token != "DummyToken" ?
+
+  // const routes = user?.token != "DummyToken" ?
+  console.log(cookieFlag)
+  const routes = cookieFlag        ?
   ( updatedNavConfig?.length > 1 &&  useRoutes([
     {
       element: (user ||  Cookies.get('user') ) ? (
